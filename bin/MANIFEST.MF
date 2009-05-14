@@ -1,0 +1,8 @@
+MIDlet-1: MnemoJoJo, mnemosyne.png, mnemojojo.FireMIDlet
+MIDlet-Name: MnemoJoJo
+MIDlet-Permissions: javax.microedition.io.Connector.file.read,javax.mi
+ croedition.io.Connector.file.write
+MIDlet-Vendor: Timothy Bourke
+MIDlet-Version: 0.6.1
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0

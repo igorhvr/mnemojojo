@@ -1,0 +1,9 @@
+
+Features:
+* Handles images and simple HTML markup.
+* Simple, responsive, interface.
+
+Does not:
+* Yet handle sounds.
+* Allow editing of cards.
+
