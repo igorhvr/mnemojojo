@@ -36,7 +36,7 @@ abstract class Core
     private long thinking_msecs = 0;
 
     // Messages
-    protected String versionInfo = "MnemoJoJo 0.6.1";
+    protected String versionInfo = "MnemoJoJo 0.6.2";
 
     protected String reviewTitle = "Review Cards";
     protected String openTitle = "Open Cards";

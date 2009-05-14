@@ -15,11 +15,7 @@
 /*
  * TODO:
  *  - sign and run on phone (get rid of security warnings)
- *  - there's still something wrong with the display of categories
  *  - does not stop at end of new cards!
- *
- *  Feature Requests:
- *  - Add an option to scroll by a half-page (Uwe Beiküfner).
  *  
  */
 package mnemojojo;
@@ -327,6 +323,7 @@ public class FireMIDlet
 
     private void unpackDatabase()
     {
+	/*
 	String path = config.cardPath + "cards.db";
 
 	try {
@@ -335,14 +332,13 @@ public class FireMIDlet
 		startWait(unpackingText, 1, 0);
 		startOperation((int)c.fileSize());
 		config.cards_mtime = c.lastModified();
-		c.close();
 
 		Unpack u = new Unpack(this);
-		u.unpack(path, "file://");
-	    } else {
-		c.close();
+		u.unpack(c.openDataInputStream(), "file://");
 	    }
+	    c.close();
 	} catch (IOException e) {}
+	*/
     }
 
     public void commandAction(javax.microedition.lcdui.Command cmd, Component c)
@@ -478,7 +474,8 @@ public class FireMIDlet
 	    config.save();
 
 	    try {
-		setCardDir("file://");
+		//setCardDir("file://");
+		setCardDir(config.cardPath.toString());
 	    } catch (IOException e) {
 		showFatal(e.toString(), true);
 		return;
