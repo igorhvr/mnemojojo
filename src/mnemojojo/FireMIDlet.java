@@ -382,8 +382,12 @@ public class FireMIDlet
 
     void showQuestionScreen()
     {
-	screen.setCurrent(questionPanel);
-	current = QUESTION;
+	if (questionPanel != null) {
+	    screen.setCurrent(questionPanel);
+	    current = QUESTION;
+	} else {
+	    showDone();
+	}
     }
 
     void showAnswerScreen()
@@ -465,6 +469,16 @@ public class FireMIDlet
     {
 	String title = dis.getTitle();
 	String label = cmd.getLabel();
+
+	if (cmd.equals(cmdShowQ)) {
+	    showQuestionScreen();
+	    unpauseThinking();
+	    return;
+
+	} else if (cmd.equals(cmdShowA)) {
+	    showAnswerScreen();
+	    return;
+	}
 
 	if (label.equals(exitText)) {
 	    startWait(savingText, 1, 0);
