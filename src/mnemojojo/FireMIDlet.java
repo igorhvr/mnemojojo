@@ -24,6 +24,7 @@ import java.lang.*;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 import javax.microedition.lcdui.Display;
@@ -54,24 +55,6 @@ import gr.fire.ui.FireTheme;
 import gr.fire.core.*;
 import gr.fire.util.Log;
 import gr.fire.ui.ProgressbarAnimation;
-/*
-import gr.fire.core.FireScreen;
-import gr.fire.core.Panel;
-import gr.fire.core.Component;
-import gr.fire.browser.util.Command;
-import gr.fire.browser.util.PageListener;
-import gr.fire.core.BoxLayout;
-import gr.fire.core.Container;
-import gr.fire.core.KeyListener;
-import gr.fire.core.SplashScreen;
-import gr.fire.ui.Alert;
-import gr.fire.ui.FireTheme;
-import gr.fire.ui.InputComponent;
-import gr.fire.ui.SpriteAnimation;
-import gr.fire.ui.TextComponent;
-import gr.fire.util.Lang;
-import gr.fire.util.Log;
-*/
 
 public class FireMIDlet
     extends Core
@@ -82,6 +65,8 @@ public class FireMIDlet
 	       Runnable,
 	       Progress
 {
+    boolean initialized = false;
+
     StringBuffer path;
     int pathLen;
 
@@ -101,6 +86,8 @@ public class FireMIDlet
     Command cmdOk;
     Command cmdExit;
     Command cmdShow;
+    Command cmdShowQ;
+    Command cmdShowA;
 
     private final boolean debug = false;
 
@@ -133,18 +120,21 @@ public class FireMIDlet
 	cmdOk = new Command(okText, Command.OK, 1); 
 	cmdExit = new Command(exitText, Command.EXIT, 5);
 	cmdShow = new Command(showText, Command.ITEM, 1);
+	cmdShowQ = new Command(closeText, Command.ITEM, 1);
+	cmdShowA = new Command(closeText, Command.ITEM, 1);
     }
 
     public void startApp()
 	throws MIDletStateChangeException
     {
-	System.out.println("jojo: startApp!");
-	showAbout();
+	if (!initialized) {
+	    showAbout();
+	    initialized = true;
+	}
     }
 
     public void destroyApp(boolean unconditional)
     {
-	System.out.println("jojo: destroyApp!");
 	startWait(savingText, 1, 0);
 	saveCards();
 	screen.destroy();
@@ -157,6 +147,27 @@ public class FireMIDlet
 	path = new StringBuffer(cardPath);
 	path.append("cards/");
 	pathLen = path.length();
+    }
+
+    private Panel makePage(String contents)
+    {
+	try {
+	    ByteArrayInputStream in =
+		new ByteArrayInputStream(contents.getBytes("UTF-8"));
+	    Page page = browser.loadPage(in, "UTF-8");
+	    in.close();
+
+	    Panel panel = new Panel(page.getPageContainer(),
+		Panel.HORIZONTAL_SCROLLBAR | Panel.VERTICAL_SCROLLBAR, true);
+	    panel.setCommandListener(this);
+	    panel.setDragScroll(true);
+
+	    return panel;
+	} catch (Exception e) {
+	    showFatal(e.toString(), false);
+	}
+
+	return null;
     }
 
     private Panel loadPage(String pagePath)
@@ -185,8 +196,8 @@ public class FireMIDlet
 	card.appendSerial(path);
 	path.append(".htm");
 
-	String curTitle = card.categoryName() + "    ("
-			    + Integer.toString(numLeft) + ")";
+	String curTitle = card.categoryName() + "\t"
+			    + Integer.toString(numLeft);
 
 	questionPanel = loadPage(path.toString());
 	questionPanel.setLeftSoftKeyCommand(cmdShow);
@@ -202,6 +213,26 @@ public class FireMIDlet
 	answerPanel.setLabel(curTitle);
     }
 
+    void checkExportTime()
+    {
+	int days_left = carddb.daysLeft();
+	byte icon;
+	String msg;
+
+	if (days_left < 0) {
+	    msg = updateOverdueText;
+	    icon = gr.fire.ui.Alert.TYPE_WARNING;
+	} else if (days_left == 0) {
+	    msg = updateTodayText;
+	    icon = gr.fire.ui.Alert.TYPE_INFO;
+	} else {
+	    return;
+	}
+
+	screen.showAlert(msg, icon,
+			 gr.fire.ui.Alert.USER_SELECTED_OK, cmdShowQ, this);
+    }
+
     void showFatal(String msg, boolean exit)
     {
 	Command cmdAfter = null;
@@ -209,18 +240,13 @@ public class FireMIDlet
 	    cmdAfter = cmdExit;
 	}
 
-	System.out.print("FATAL: ");
-	System.out.println(msg);
-
-	screen.showAlert(msg,
-			 gr.fire.ui.Alert.TYPE_ERROR,
-			 gr.fire.ui.Alert.USER_SELECTED_OK,
-			 cmdAfter, this);
+	screen.showAlert(msg, gr.fire.ui.Alert.TYPE_ERROR,
+			 gr.fire.ui.Alert.USER_SELECTED_OK, cmdAfter, this);
     }
 
     void showDone()
     {
-	String msg = doneText + makeDaysText(carddb.daysLeft());
+	String msg = doneText;
 	screen.showAlert(msg,
 			 gr.fire.ui.Alert.TYPE_INFO,
 			 gr.fire.ui.Alert.USER_SELECTED_OK,
@@ -284,10 +310,65 @@ public class FireMIDlet
 	current = CARD_DIRS;
     }
 
+    private void addStatRow(StringBuffer msg, String name, String stat)
+    {
+	msg.append("<tr><td>");
+	msg.append(name);
+	msg.append("</td><td>");
+	msg.append(stat);
+	msg.append("</td></tr>");
+    }
+
+    private void addStatRow(StringBuffer msg, String name, int stat)
+    {
+	addStatRow(msg, name, Integer.toString(stat));
+    }
+
+    private void addStatRow(StringBuffer msg, String name, float stat)
+    {
+	addStatRow(msg, name, Float.toString(stat));
+    }
+
+    void showStats(int returnTo)
+    {
+	StringBuffer msg = new StringBuffer("<body><p><table>");
+	addStatRow(msg, "", config.cardPath);
+	addStatRow(msg, daysRemainingText + ":", carddb.daysLeft());
+	msg.append("</table>");
+	if (curCard != null) {
+	    msg.append("<br/><br/><table>");
+	    addStatRow(msg, gradeText + ":", curCard.grade);
+	    addStatRow(msg, easinessText + ":", curCard.feasiness());
+	    addStatRow(msg, repetitionsText + ":", curCard.repetitions());
+	    addStatRow(msg, lapsesText + ":", curCard.lapses);
+	    addStatRow(msg, daysSinceLastText + ":",
+		curCard.daysSinceLastRep(carddb.days_since_start));
+	    addStatRow(msg, daysUntilNextText + ":",
+		curCard.daysUntilNextRep(carddb.days_since_start));
+	    msg.append("</table>");
+	}
+	msg.append("</p></body>");
+
+	Panel statPanel = makePage(msg.toString());
+
+	if (statPanel != null) {
+	    if (returnTo == ANSWER) {
+		statPanel.setRightSoftKeyCommand(cmdShowA);
+	    } else {
+		statPanel.setRightSoftKeyCommand(cmdShowQ);
+	    }
+
+	    statPanel.setKeyMapper(this);
+	    statPanel.setLabel(statisticsText);
+	    screen.setCurrent(statPanel);
+	}
+    }
+
     void showAbout()
     {
 	Panel aboutPanel = loadPage("file://about.html");
 	aboutPanel.setLabel(versionInfo);
+	aboutPanel.setKeyMapper(this);
 
 	aboutPanel.setLeftSoftKeyCommand(cmdOk);
 	aboutPanel.setRightSoftKeyCommand(cmdExit);
@@ -303,7 +384,6 @@ public class FireMIDlet
     {
 	screen.setCurrent(questionPanel);
 	current = QUESTION;
-	startThinking();
     }
 
     void showAnswerScreen()
@@ -315,7 +395,9 @@ public class FireMIDlet
     private void showNextQuestion()
     {
 	if (nextQuestion()) {
+	    //System.out.println(carddb.toString());
 	    showQuestionScreen();
+	    startThinking();
 	} else {
 	    showDone();
 	}
@@ -345,6 +427,16 @@ public class FireMIDlet
     {
 	String label = cmd.getLabel();
 
+	if (cmd.equals(cmdShowQ)) {
+	    showQuestionScreen();
+	    unpauseThinking();
+	    return;
+
+	} else if (cmd.equals(cmdShowA)) {
+	    showAnswerScreen();
+	    return;
+	}
+
 	if (current == ABOUT && label.equals(okText)) {
 	    if (config.cardPath.equals("")
 		|| !(FindCardDir.isCardDir(new StringBuffer(config.cardPath))))
@@ -356,6 +448,7 @@ public class FireMIDlet
 		unpackDatabase();
 		//carddb.dumpCards();
 		showNextQuestion();
+		checkExportTime();
 	    }
 
 	} else if (label.equals(showText)) {
@@ -430,6 +523,10 @@ public class FireMIDlet
 		curCard.skip = true;
 		showNextQuestion();
 		break;
+
+	    case FireScreen.KEY_POUND:
+		showStats(QUESTION);
+		break;
 	    }
 	    break;
 
@@ -444,6 +541,7 @@ public class FireMIDlet
 	    case FireScreen.KEY_NUM3: grade = 3; break;
 	    case FireScreen.KEY_NUM4: grade = 4; break;
 	    case FireScreen.KEY_NUM5: grade = 5; break;
+	    case FireScreen.KEY_POUND: showStats(ANSWER); break;
 	    }
 
 	    if (grade != -1) {
@@ -482,11 +580,14 @@ public class FireMIDlet
 	    }
 
 	    loadCards();
+	    showNextQuestion();
+
+	    checkExportTime();
 	    unpackDatabase();
 
-	    showNextQuestion();
 	    task = TASK_NONE;
 	    break;
+
 	default:
 	    break;
 	}

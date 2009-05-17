@@ -111,7 +111,7 @@ public class TextMIDlet
 	answerForm.addCommand(cmdOpen);
 	for (int i=0; i < 6; ++i) {
 	    answerForm.addCommand(
-		new Command(gradeText[i], Command.ITEM, gradePriority[i]));
+		new Command(gradesText[i], Command.ITEM, gradePriority[i]));
 	}
 	answerForm.addCommand(cmdSkip);
 
@@ -226,7 +226,7 @@ public class TextMIDlet
 
 	} else {
 	    for (int i=0; i < 6; ++i) {
-		if (label.equals(gradeText[i])) {
+		if (label.equals(gradesText[i])) {
 		    if (doGrade(i)) {
 			if (nextQuestion()) {
 			    showQuestionScreen();

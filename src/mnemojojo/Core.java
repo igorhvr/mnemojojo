@@ -36,7 +36,7 @@ abstract class Core
     private long thinking_msecs = 0;
 
     // Messages
-    protected String versionInfo = "MnemoJoJo 0.6.2";
+    protected String versionInfo = "MnemoJoJo 1.0.0";
 
     protected String reviewTitle = "Review Cards";
     protected String openTitle = "Open Cards";
@@ -50,16 +50,29 @@ abstract class Core
     protected String okText = "Ok";
     protected String aboutText = "About";
     protected String openText = "Open";
-    protected String[] gradeText = { "Grade 0", "Grade 1", "Grade 2",
-					 "Grade 3", "Grade 4", "Grade 5" };
+    protected String gradeText = "Grade";
+    protected String[] gradesText;
     protected String skipText = "Skip";
     protected String showText = "Show";
+    protected String closeText = "Close";
     protected String lookingText = "Searching for cards...";
     protected String loadingText = "Loading cards...";
     protected String unpackingText = "Unpacking cards...";
     protected String savingText = "Saving cards...";
     protected String doneText = "Finished for today.";
     protected String nocardsText = "No cards found!\nPlease export from Mnemosyne.";
+
+    protected String statisticsText = "Statistics";
+    protected String currentCardText = "Current Card";
+    protected String easinessText = "Easiness";
+    protected String repetitionsText = "Repetitions";
+    protected String lapsesText = "Lapses";
+    protected String daysSinceLastText = "Days since last repetition";
+    protected String daysUntilNextText = "Days until next repetition";
+
+    protected String daysRemainingText = "Days until an export is due";
+    protected String updateOverdueText = "An export from Mnemosyne is overdue!";
+    protected String updateTodayText = "An export from Mnemosyne is due today.";
 
     protected String[] aboutLines = {
 	    versionInfo,
@@ -69,26 +82,15 @@ abstract class Core
 	    "SM-2 Algorithm: Piotr Wozniak\n"
 	};
 
-    abstract public void startApp() throws MIDletStateChangeException;
-
-    protected String makeDaysText(int daysLeft)
+    public Core()
     {
-	StringBuffer s = new StringBuffer("Synchronization is required ");
-
-	if (daysLeft == 0) {
-	    s.append("immediately!");
-
-	} else if (daysLeft == 1) {
-	    s.append("after tomorrow.");
-
-	} else {
-	    s.append("in ");
-	    s.append(Integer.toString(daysLeft));
-	    s.append(" days.");
+	gradesText = new String[6];
+	for (int i=0; i < 6; ++i) {
+	    gradesText[i] = gradeText + " " + Integer.toString(i);
 	}
-
-	return s.toString();
     }
+
+    abstract public void startApp() throws MIDletStateChangeException;
 
     public void pauseApp()
     {
