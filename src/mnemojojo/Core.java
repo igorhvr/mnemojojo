@@ -94,15 +94,16 @@ abstract class Core
 
     public void pauseApp()
     {
-	System.out.println("jojo: pauseApp!");
 	pauseThinking();
     }
 
     public void destroyApp(boolean unconditional)
     {
-	System.out.println("jojo: destroyApp!");
 	startWait(savingText, 1, 0);
 	saveCards();
+	if (carddb != null) {
+	    carddb.close();
+	}
 	notifyDestroyed();
     }
 
