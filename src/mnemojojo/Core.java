@@ -36,7 +36,7 @@ abstract class Core
     private long thinking_msecs = 0;
 
     // Messages
-    protected String versionInfo = "MnemoJoJo 0.9.0";
+    protected String versionInfo = "MnemoJoJo 0.9.1";
 
     protected String reviewTitle = "Review Cards";
     protected String openTitle = "Open Cards";
@@ -73,6 +73,10 @@ abstract class Core
     protected String daysRemainingText = "Days until an export is due";
     protected String updateOverdueText = "An export from Mnemosyne is overdue!";
     protected String updateTodayText = "An export from Mnemosyne is due today.";
+
+    protected String forDaysText = "Scheduled cards for the next days";
+    protected String inText = "In";
+    protected String daysText = "day(s)";
 
     protected String[] aboutLines = {
 	    versionInfo,
@@ -116,6 +120,7 @@ abstract class Core
 	try {
 	    curCard.gradeCard(carddb.days_since_start,
 		grade, thinking_msecs, carddb.logfile);
+	    carddb.updateFutureSchedule(curCard);
 	    return true;
 
 	} catch (IOException e) {

@@ -329,24 +329,52 @@ public class FireMIDlet
 	addStatRow(msg, name, Float.toString(stat));
     }
 
+    private void futureScheduleText(StringBuffer r)
+    {
+	int[] indays = carddb.getFutureSchedule();
+	if (indays == null) {
+	    return;
+	}
+
+	r.append("<table>");
+	r.append("<tr><td>" + forDaysText + ":</td><td/></tr>");
+	for (int i=0; i < indays.length; ++i) {
+	    r.append("<tr><td>");
+	    r.append(inText);
+	    r.append(" ");
+	    r.append(i + 1);
+	    r.append(" ");
+	    r.append(daysText);
+	    r.append(": </td><td>");
+	    r.append(indays[i]);
+	    r.append("</td></tr>");
+	}
+	r.append("</table>");
+    }
+
     void showStats(int returnTo)
     {
 	StringBuffer msg = new StringBuffer("<body><p><table>");
 	addStatRow(msg, "", config.cardPath);
-	addStatRow(msg, daysRemainingText + ":", carddb.daysLeft());
+	addStatRow(msg, daysRemainingText + ": ", carddb.daysLeft());
 	msg.append("</table>");
+
+	msg.append("<br/><br/>");
+	futureScheduleText(msg);
+
 	if (curCard != null) {
 	    msg.append("<br/><br/><table>");
-	    addStatRow(msg, gradeText + ":", curCard.grade);
-	    addStatRow(msg, easinessText + ":", curCard.feasiness());
-	    addStatRow(msg, repetitionsText + ":", curCard.repetitions());
-	    addStatRow(msg, lapsesText + ":", curCard.lapses);
-	    addStatRow(msg, daysSinceLastText + ":",
+	    addStatRow(msg, gradeText + ": ", curCard.grade);
+	    addStatRow(msg, easinessText + ": ", curCard.feasiness());
+	    addStatRow(msg, repetitionsText + ": ", curCard.repetitions());
+	    addStatRow(msg, lapsesText + ": ", curCard.lapses);
+	    addStatRow(msg, daysSinceLastText + ": ",
 		curCard.daysSinceLastRep(carddb.days_since_start));
-	    addStatRow(msg, daysUntilNextText + ":",
+	    addStatRow(msg, daysUntilNextText + ": ",
 		curCard.daysUntilNextRep(carddb.days_since_start));
 	    msg.append("</table>");
 	}
+
 	msg.append("</p></body>");
 
 	Panel statPanel = makePage(msg.toString());
