@@ -36,7 +36,7 @@ abstract class Core
     private long thinking_msecs = 0;
 
     // Messages
-    protected String versionInfo = "MnemoJoJo 0.9.1";
+    protected String versionInfo = "MnemoJoJo 0.9.2";
 
     protected String reviewTitle = "Review Cards";
     protected String openTitle = "Open Cards";
@@ -59,7 +59,7 @@ abstract class Core
     protected String loadingText = "Loading cards...";
     protected String unpackingText = "Unpacking cards...";
     protected String savingText = "Saving cards...";
-    protected String doneText = "Finished for today.";
+    protected String doneText = "There are no new cards to review.";
     protected String nocardsText = "No cards found!\nPlease export from Mnemosyne.";
 
     protected String statisticsText = "Statistics";
@@ -72,7 +72,8 @@ abstract class Core
 
     protected String daysRemainingText = "Days until an export is due";
     protected String updateOverdueText = "An export from Mnemosyne is overdue!";
-    protected String updateTodayText = "An export from Mnemosyne is due today.";
+    protected String updateTomorrowText =
+	"An export from Mnemosyne is due tomorrow.";
 
     protected String forDaysText = "Scheduled cards for the next days";
     protected String inText = "In";

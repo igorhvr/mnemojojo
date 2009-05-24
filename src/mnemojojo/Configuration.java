@@ -22,6 +22,8 @@ public class Configuration
 {
     public String cardPath;
     public long cards_mtime;
+    public int leftSoftKey;
+    public int rightSoftKey;
 
     public Configuration() {
 	load();
@@ -67,12 +69,28 @@ public class Configuration
 	} else {
 	    cards_mtime = Long.parseLong(v);
 	}
+
+	v = readRecord("left_soft_key");
+	if (v == null) {
+	    leftSoftKey = 0;
+	} else {
+	    leftSoftKey = Integer.parseInt(v);
+	}
+
+	v = readRecord("right_soft_key");
+	if (v == null) {
+	    rightSoftKey = 0;
+	} else {
+	    rightSoftKey = Integer.parseInt(v);
+	}
     }
 
     public void save()
     {
 	writeRecord("cardpath", cardPath);
 	writeRecord("cards_mtime", Long.toString(cards_mtime));
+	writeRecord("left_soft_key", Integer.toString(leftSoftKey));
+	writeRecord("right_soft_key", Integer.toString(rightSoftKey));
     }
 }
 

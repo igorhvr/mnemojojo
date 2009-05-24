@@ -25,6 +25,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
+import java.util.Date; // XXX
+import java.util.TimeZone; // XXX
+import java.util.Calendar; // XXX
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 import javax.microedition.lcdui.Display;
@@ -52,7 +55,9 @@ import mnemogogo.mobile.hexcsv.Unpack;
 import gr.fire.browser.Browser;
 import gr.fire.browser.util.Page;
 import gr.fire.ui.FireTheme;
-import gr.fire.core.*;
+import gr.fire.core.FireScreen;
+import gr.fire.core.KeyListener;
+import gr.fire.core.Component;
 import gr.fire.util.Log;
 import gr.fire.ui.ProgressbarAnimation;
 
@@ -60,9 +65,8 @@ public class FireMIDlet
     extends Core
     implements CommandListener,
 	       gr.fire.core.CommandListener,
-	       KeyListener,
-	       gr.fire.core.KeyMapper,
 	       Runnable,
+	       KeyListener,
 	       Progress
 {
     boolean initialized = false;
@@ -97,6 +101,7 @@ public class FireMIDlet
     private final int QUESTION = 2;
     private final int ANSWER = 3;
     private final int WAIT = 4;
+    private final int KEYMAP = 5;
 
     private final int TASK_NONE = 0;
     private final int TASK_LOAD = 1;
@@ -128,6 +133,12 @@ public class FireMIDlet
 	throws MIDletStateChangeException
     {
 	if (!initialized) {
+	    if (config.leftSoftKey != 0) {
+		screen.leftSoftKey = config.leftSoftKey;
+	    }
+	    if (config.rightSoftKey != 0) {
+		screen.rightSoftKey = config.rightSoftKey;
+	    }
 	    showAbout();
 	    initialized = true;
 	}
@@ -157,8 +168,7 @@ public class FireMIDlet
 	    Page page = browser.loadPage(in, "UTF-8");
 	    in.close();
 
-	    Panel panel = new Panel(page.getPageContainer(),
-		Panel.HORIZONTAL_SCROLLBAR | Panel.VERTICAL_SCROLLBAR, true);
+	    Panel panel = new Panel(page.getPageContainer());
 	    panel.setCommandListener(this);
 	    panel.setDragScroll(true);
 
@@ -175,8 +185,7 @@ public class FireMIDlet
 	try {
 	    Page page = browser.loadPage(pagePath, HttpConnection.GET, null, null);
 
-	    Panel panel = new Panel(page.getPageContainer(),
-		Panel.HORIZONTAL_SCROLLBAR | Panel.VERTICAL_SCROLLBAR, true);
+	    Panel panel = new Panel(page.getPageContainer());
 	    panel.setCommandListener(this);
 	    panel.setDragScroll(true);
 
@@ -208,7 +217,6 @@ public class FireMIDlet
 	path.setCharAt(pathLen, 'A');
 	answerPanel = loadPage(path.toString());
 	answerPanel.setRightSoftKeyCommand(cmdExit);
-	answerPanel.setKeyMapper(this);
 	answerPanel.setKeyListener(this);
 	answerPanel.setLabel(curTitle);
     }
@@ -219,11 +227,11 @@ public class FireMIDlet
 	byte icon;
 	String msg;
 
-	if (days_left < 0) {
+	if (days_left <= 0) {
 	    msg = updateOverdueText;
 	    icon = gr.fire.ui.Alert.TYPE_WARNING;
-	} else if (days_left == 0) {
-	    msg = updateTodayText;
+	} else if (days_left == 1) {
+	    msg = updateTomorrowText;
 	    icon = gr.fire.ui.Alert.TYPE_INFO;
 	} else {
 	    return;
@@ -386,26 +394,51 @@ public class FireMIDlet
 		statPanel.setRightSoftKeyCommand(cmdShowQ);
 	    }
 
-	    statPanel.setKeyMapper(this);
 	    statPanel.setLabel(statisticsText);
 	    screen.setCurrent(statPanel);
 	}
+    }
+
+    void showKeyMap()
+    {
+	MapKeysPanel mkp = new MapKeysPanel(screen, this, cmdOk);
+	screen.setCurrent(mkp);
+	current = KEYMAP;
     }
 
     void showAbout()
     {
 	Panel aboutPanel = loadPage("file://about.html");
 	aboutPanel.setLabel(versionInfo);
-	aboutPanel.setKeyMapper(this);
 
+	aboutPanel.setKeyListener(this);
 	aboutPanel.setLeftSoftKeyCommand(cmdOk);
 	aboutPanel.setRightSoftKeyCommand(cmdExit);
-	aboutPanel.setKeyListener(this);
 
 	if (aboutPanel != null) {
 	    screen.setCurrent(aboutPanel);
 	}
 	current = ABOUT;
+
+	/*
+	// XXX Testing XXX
+	Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("EST"));
+	Date now = cal.getTime();
+	
+	long msecs = now.getTime();
+	long secs = msecs / 1000;
+	long hour = (secs / 60 / 60) % 24;
+	long mins = (secs / 60) % 60;
+	
+	System.out.print("msecs=");
+	System.out.println(msecs);
+	System.out.print("hour=");
+	System.out.print(hour);
+	System.out.print(" mins=");
+	System.out.println(mins);
+
+	// XXX Testing XXX
+	*/
     }
 
     void showQuestionScreen()
@@ -482,6 +515,11 @@ public class FireMIDlet
 		showNextQuestion();
 		checkExportTime();
 	    }
+	} else if (current == KEYMAP && label.equals(okText)) {
+	    config.leftSoftKey = screen.leftSoftKey;
+	    config.rightSoftKey = screen.rightSoftKey;
+	    config.save();
+	    showAbout();
 
 	} else if (label.equals(showText)) {
 	    showAnswerScreen();
@@ -523,29 +561,6 @@ public class FireMIDlet
 	}
     }
 
-    public int mapKey(int keyCode)
-    {
-	switch (keyCode)
-	{
-	case FireScreen.KEY_NUM0: return keyCode;
-	case FireScreen.KEY_NUM1: return keyCode;
-	case FireScreen.KEY_NUM2: return keyCode;
-	case FireScreen.KEY_NUM3: return keyCode;
-	case FireScreen.KEY_NUM4: return keyCode;
-	case FireScreen.KEY_NUM5: return keyCode;
-
-	case FireScreen.KEY_NUM6: return FireScreen.UP;
-	case FireScreen.KEY_NUM7: return FireScreen.LEFT;
-	case FireScreen.KEY_NUM8: return FireScreen.RIGHT;
-	case FireScreen.KEY_NUM9: return FireScreen.DOWN;
-
-	case FireScreen.KEY_STAR: return keyCode;
-	case FireScreen.KEY_POUND: return keyCode;
-
-	default: return screen.getGameAction(keyCode);
-	}
-    }
-
     public void keyReleased(int code, Component src)
     {
 	switch (current) {
@@ -554,6 +569,9 @@ public class FireMIDlet
 	    {
 	    case FireScreen.KEY_STAR:
 		showCardDirList();
+		break;
+	    case FireScreen.KEY_POUND:
+		showKeyMap();
 		break;
 	    }
 	    break;

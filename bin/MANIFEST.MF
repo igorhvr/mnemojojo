@@ -3,6 +3,6 @@ MIDlet-Name: MnemoJoJo
 MIDlet-Permissions: javax.microedition.io.Connector.file.read,javax.mi
  croedition.io.Connector.file.write
 MIDlet-Vendor: Timothy Bourke
-MIDlet-Version: 0.9.1
+MIDlet-Version: 0.9.2
 MicroEdition-Configuration: CLDC-1.1
 MicroEdition-Profile: MIDP-2.0
