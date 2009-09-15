@@ -1,4 +1,5 @@
 /*
+	    httpClient.setPrefix();
  * Copyright (c) 2009 Timothy Bourke
  * All rights reserved.
  *
@@ -50,7 +51,7 @@ import mnemogogo.mobile.hexcsv.Card;
 import mnemogogo.mobile.hexcsv.HexCsv;
 import mnemogogo.mobile.hexcsv.FindCardDir;
 import mnemogogo.mobile.hexcsv.Progress;
-import mnemogogo.mobile.hexcsv.Unpack;
+import mnemogogo.mobile.hexcsv.Debug;	// XXX
 
 import gr.fire.browser.Browser;
 import gr.fire.browser.util.Page;
@@ -59,6 +60,7 @@ import gr.fire.core.FireScreen;
 import gr.fire.core.KeyListener;
 import gr.fire.core.Component;
 import gr.fire.util.Log;
+import gr.fire.util.FireConnector;
 import gr.fire.ui.ProgressbarAnimation;
 
 public class FireMIDlet
@@ -75,6 +77,7 @@ public class FireMIDlet
     int pathLen;
 
     Display display;
+    HttpClient httpClient;
     Browser browser;
     FireScreen screen;
 
@@ -109,6 +112,8 @@ public class FireMIDlet
 
     public FireMIDlet()
     {
+	Debug.logln("FireMIDlet()"); // XXX
+	//try { // XXX
 	Log.showDebug = debug;
 
 	display = Display.getDisplay(this);
@@ -120,18 +125,25 @@ public class FireMIDlet
 	    screen.setTheme(new FireTheme("file://theme.properties"));
 	} catch (Exception e) {}
 
-	browser = new Browser();
+	httpClient = new HttpClient(new FireConnector());
+	browser = new Browser(httpClient);
 
 	cmdOk = new Command(okText, Command.OK, 1); 
 	cmdExit = new Command(exitText, Command.EXIT, 5);
 	cmdShow = new Command(showText, Command.ITEM, 1);
 	cmdShowQ = new Command(closeText, Command.ITEM, 1);
 	cmdShowA = new Command(closeText, Command.ITEM, 1);
+	//} catch (Exception e) { // XXX
+	//    Debug.logln("FireMIDlet(): exception: " + e.toString()); // XXX
+	//    e.printStackTrace(); // XXX
+	//} // XXX
     }
 
     public void startApp()
 	throws MIDletStateChangeException
     {
+	//Debug.logln("startApp()"); // XXX
+	//try { // XXX
 	if (!initialized) {
 	    if (config.leftSoftKey != 0) {
 		screen.leftSoftKey = config.leftSoftKey;
@@ -142,6 +154,10 @@ public class FireMIDlet
 	    showAbout();
 	    initialized = true;
 	}
+	//} catch (Exception e) { // XXX
+	//    Debug.logln("startApp(): exception: " + e.toString()); // XXX
+	//    e.printStackTrace(); // XXX
+	//} // XXX
     }
 
     public void destroyApp(boolean unconditional)
@@ -155,8 +171,8 @@ public class FireMIDlet
     public void setCardDir(String cardPath)
 	throws IOException
     {
+	httpClient.setUrlPrefix(cardPath);
 	path = new StringBuffer(cardPath);
-	path.append("cards/");
 	pathLen = path.length();
     }
 
@@ -197,25 +213,44 @@ public class FireMIDlet
 	return null;
     }
 
+    StringBuffer makeCardHtml(boolean includeAnswer)
+    {
+	StringBuffer msg = new StringBuffer(
+	    "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<body><p>");
+
+	if (curCard.question == null || curCard.answer == null) {
+	    msg.append(nocardloadedText);
+
+	} else if (includeAnswer) {
+	    if (!curCard.overlay) {
+		msg.append(curCard.question);
+		msg.append("<hr/>");
+	    }
+
+	    msg.append(curCard.answer);
+
+	} else {
+	    msg.append(curCard.question);
+	}
+
+	msg.append("</p></body>");
+
+	return msg;
+    }
+
     public void setCard(Card card, int numLeft)
 	throws Exception, IOException
     {
-	path.delete(pathLen, path.length());
-	path.append("Q");
-	card.appendSerial(path);
-	path.append(".htm");
-
 	String curTitle = card.categoryName() + "\t"
 			    + Integer.toString(numLeft);
 
-	questionPanel = loadPage(path.toString());
+	questionPanel = makePage(makeCardHtml(false).toString());
 	questionPanel.setLeftSoftKeyCommand(cmdShow);
 	questionPanel.setRightSoftKeyCommand(cmdExit);
 	questionPanel.setKeyListener(this);
 	questionPanel.setLabel(curTitle);
 
-	path.setCharAt(pathLen, 'A');
-	answerPanel = loadPage(path.toString());
+	answerPanel = makePage(makeCardHtml(true).toString());
 	answerPanel.setRightSoftKeyCommand(cmdExit);
 	answerPanel.setKeyListener(this);
 	answerPanel.setLabel(curTitle);
@@ -293,6 +328,7 @@ public class FireMIDlet
 	if (dbs == null || dbs.length == 0) {
 	    showFatal(nocardsText, true);
 	    return;
+	    //dbs = FindCardDir.standardList();
 	}
 
 	activeList = new List(openTitle, Choice.IMPLICIT);
@@ -408,6 +444,7 @@ public class FireMIDlet
 
     void showAbout()
     {
+	httpClient.setUrlPrefix(null);
 	Panel aboutPanel = loadPage("file://about.html");
 	aboutPanel.setLabel(versionInfo);
 
@@ -420,25 +457,12 @@ public class FireMIDlet
 	}
 	current = ABOUT;
 
-	/*
 	// XXX Testing XXX
-	Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("EST"));
-	Date now = cal.getTime();
-	
-	long msecs = now.getTime();
-	long secs = msecs / 1000;
-	long hour = (secs / 60 / 60) % 24;
-	long mins = (secs / 60) % 60;
-	
-	System.out.print("msecs=");
-	System.out.println(msecs);
-	System.out.print("hour=");
-	System.out.print(hour);
-	System.out.print(" mins=");
-	System.out.println(mins);
-
+	Calendar cal = Calendar.getInstance();
+	TimeZone tz = cal.getTimeZone();
+	long tzoff = tz.getRawOffset() /* / 3600000 */;
+	Debug.logln("tzoff=" + Long.toString(tzoff));
 	// XXX Testing XXX
-	*/
     }
 
     void showQuestionScreen()
@@ -468,26 +492,6 @@ public class FireMIDlet
 	}
     }
 
-    private void unpackDatabase()
-    {
-	/*
-	String path = config.cardPath + "cards.db";
-
-	try {
-	    FileConnection c = (FileConnection)Connector.open(path, Connector.READ);
-	    if (c.lastModified() > config.cards_mtime) {
-		startWait(unpackingText, 1, 0);
-		startOperation((int)c.fileSize());
-		config.cards_mtime = c.lastModified();
-
-		Unpack u = new Unpack(this);
-		u.unpack(c.openDataInputStream(), "file://");
-	    }
-	    c.close();
-	} catch (IOException e) {}
-	*/
-    }
-
     public void commandAction(javax.microedition.lcdui.Command cmd, Component c)
     {
 	String label = cmd.getLabel();
@@ -510,7 +514,6 @@ public class FireMIDlet
 	    } else {
 		startWait(loadingText, 1, 0);
 		loadCards();
-		unpackDatabase();
 		//carddb.dumpCards();
 		showNextQuestion();
 		checkExportTime();
@@ -643,7 +646,6 @@ public class FireMIDlet
 	    showNextQuestion();
 
 	    checkExportTime();
-	    unpackDatabase();
 
 	    task = TASK_NONE;
 	    break;

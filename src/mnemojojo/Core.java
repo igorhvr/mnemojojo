@@ -20,6 +20,7 @@ import java.io.IOException;
 import mnemogogo.mobile.hexcsv.HexCsv;
 import mnemogogo.mobile.hexcsv.Progress;
 import mnemogogo.mobile.hexcsv.Card;
+//import mnemogogo.mobile.hexcsv.Debug;	// XXX
 
 import javax.microedition.midlet.MIDlet;
 import javax.microedition.midlet.MIDletStateChangeException;
@@ -61,6 +62,7 @@ abstract class Core
     protected String savingText = "Saving cards...";
     protected String doneText = "There are no new cards to review.";
     protected String nocardsText = "No cards found!\nPlease export from Mnemosyne.";
+    protected String nocardloadedText = "Unexpected error: card not loaded.";
 
     protected String statisticsText = "Statistics";
     protected String currentCardText = "Current Card";
@@ -73,7 +75,7 @@ abstract class Core
     protected String daysRemainingText = "Days until an export is due";
     protected String updateOverdueText = "An export from Mnemosyne is overdue!";
     protected String updateTomorrowText =
-	"An export from Mnemosyne is due tomorrow.";
+	"An export from Mnemosyne is due before tomorrow.";
 
     protected String forDaysText = "Scheduled cards for the next days";
     protected String inText = "In";
@@ -89,6 +91,7 @@ abstract class Core
 
     public Core()
     {
+	//Debug.logln("Core()"); // XXX
 	gradesText = new String[6];
 	for (int i=0; i < 6; ++i) {
 	    gradesText[i] = gradeText + " " + Integer.toString(i);
