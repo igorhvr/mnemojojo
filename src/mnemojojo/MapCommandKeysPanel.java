@@ -22,11 +22,11 @@ import gr.fire.core.Container;
 import gr.fire.core.CommandListener;
 import gr.fire.ui.TextComponent;
 
-class MapKeysPanel
+class MapCommandKeysPanel
     extends gr.fire.core.Panel
 {
     public String pressText = "Press Me";
-    public String configureKeysTitle = "Configure Keys";
+    public String configureKeysTitle = "Configure Command Keys";
     public String pressInfoText = "Please press the key indicated below.";
 
     private boolean showingLeft;
@@ -36,9 +36,9 @@ class MapKeysPanel
 
     protected Command pressCmd = new Command(pressText, Command.OK, 1);
 
-    public MapKeysPanel(FireScreen s, CommandListener li, Command cmd)
+    public MapCommandKeysPanel(FireScreen s, CommandListener li, Command cmd)
     {
-	super(null, Panel.VERTICAL_SCROLLBAR, true);
+	super(null, Panel.NO_SCROLLBAR, true);
 	
 	screen = s;
 	listener = li;

@@ -55,6 +55,7 @@ abstract class Core
     protected String[] gradesText;
     protected String skipText = "Skip";
     protected String showText = "Show";
+    protected String showAnswerText = "Show answer";
     protected String closeText = "Close";
     protected String lookingText = "Searching for cards...";
     protected String loadingText = "Loading cards...";

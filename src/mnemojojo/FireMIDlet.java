@@ -1,5 +1,4 @@
 /*
-	    httpClient.setPrefix();
  * Copyright (c) 2009 Timothy Bourke
  * All rights reserved.
  *
@@ -44,6 +43,7 @@ import javax.microedition.lcdui.Alert;
 import javax.microedition.lcdui.AlertType;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.Font;
+import javax.microedition.lcdui.Image;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
@@ -62,6 +62,14 @@ import gr.fire.core.Component;
 import gr.fire.util.Log;
 import gr.fire.util.FireConnector;
 import gr.fire.ui.ProgressbarAnimation;
+
+// for buttons: XXX
+import gr.fire.core.BoxLayout;
+import gr.fire.core.Container;
+import gr.fire.core.GridLayout;
+import gr.fire.ui.InputComponent;
+import gr.fire.ui.ImageComponent;
+import gr.fire.ui.TextComponent;
 
 public class FireMIDlet
     extends Core
@@ -95,6 +103,7 @@ public class FireMIDlet
     Command cmdShow;
     Command cmdShowQ;
     Command cmdShowA;
+    Command cmdButton;
 
     private final boolean debug = false;
 
@@ -109,6 +118,10 @@ public class FireMIDlet
     private final int TASK_NONE = 0;
     private final int TASK_LOAD = 1;
     private int task = TASK_NONE;
+
+    protected final int BUTTONS_NONE = 0;
+    protected final int BUTTONS_SHOW = 1;
+    protected final int BUTTONS_GRADE = 2;
 
     public FireMIDlet()
     {
@@ -133,6 +146,7 @@ public class FireMIDlet
 	cmdShow = new Command(showText, Command.ITEM, 1);
 	cmdShowQ = new Command(closeText, Command.ITEM, 1);
 	cmdShowA = new Command(closeText, Command.ITEM, 1);
+	cmdButton = new Command("invisible", Command.OK, 1);
 	//} catch (Exception e) { // XXX
 	//    Debug.logln("FireMIDlet(): exception: " + e.toString()); // XXX
 	//    e.printStackTrace(); // XXX
@@ -176,7 +190,7 @@ public class FireMIDlet
 	pathLen = path.length();
     }
 
-    private Panel makePage(String contents)
+    private Page makePage(String contents)
     {
 	try {
 	    ByteArrayInputStream in =
@@ -184,11 +198,7 @@ public class FireMIDlet
 	    Page page = browser.loadPage(in, "UTF-8");
 	    in.close();
 
-	    Panel panel = new Panel(page.getPageContainer());
-	    panel.setCommandListener(this);
-	    panel.setDragScroll(true);
-
-	    return panel;
+	    return page;
 	} catch (Exception e) {
 	    showFatal(e.toString(), false);
 	}
@@ -196,16 +206,11 @@ public class FireMIDlet
 	return null;
     }
 
-    private Panel loadPage(String pagePath)
+    private Page loadPage(String pagePath)
     {
 	try {
 	    Page page = browser.loadPage(pagePath, HttpConnection.GET, null, null);
-
-	    Panel panel = new Panel(page.getPageContainer());
-	    panel.setCommandListener(this);
-	    panel.setDragScroll(true);
-
-	    return panel;
+	    return page;
 	} catch (Exception e) {
 	    showFatal(e.toString(), false);
 	}
@@ -236,6 +241,77 @@ public class FireMIDlet
 	msg.append("</p></body>");
 
 	return msg;
+
+    }
+
+    // from Fire demo: SimpleCalc.java
+    private Panel makeButtonRow(String symbols[])
+    {
+	Container pad = new Container(new GridLayout(1, symbols.length));
+	InputComponent button;
+	Font buttonFont = Font.getFont(Font.FACE_SYSTEM,
+				       Font.STYLE_BOLD,
+				       Font.SIZE_MEDIUM);
+	
+	for(int i = 0; i<symbols.length; ++i) {
+	    button = new InputComponent(InputComponent.BUTTON);
+	    button.setValue(symbols[i]); 
+	    button.setCommandListener(this);
+	    button.setCommand(cmdButton);
+	    button.setLeftSoftKeyCommand(cmdButton); // FIXME: keep this?
+	    button.setForegroundColor(0xFF0000); // FIXME: adjust
+	    button.setFont(buttonFont);
+	    button.setLayout(FireScreen.CENTER | FireScreen.VCENTER);
+	    pad.add(button);
+	}
+	
+	Panel padPane = new Panel(pad, Panel.NO_SCROLLBAR, false);		
+	padPane.setShowBackground(true);
+	padPane.setPrefSize(screen.getWidth(), buttonFont.getHeight() * 2);
+
+	return padPane;
+    }
+
+    private Panel makeGradeButtons()
+    {
+	String buttons[] = {"0", "1", "2", "3", "4", "5"};
+	return makeButtonRow(buttons);
+    }
+
+    private Panel makeShowButtons()
+    {
+	String buttons[] = {showAnswerText};
+	return makeButtonRow(buttons);
+    }
+
+    private Panel makeDisplay(Page htmlPage, int buttonMode)
+    {
+	boolean htmlDecorations = (buttonMode == BUTTONS_NONE);
+
+	// create a panel to display cards / information
+	Panel htmlPanel = new Panel(htmlPage.getPageContainer(),
+				    Panel.VERTICAL_SCROLLBAR, htmlDecorations);
+	htmlPanel.setCommandListener(this);
+	htmlPanel.setDragScroll(true);
+
+	if (buttonMode == BUTTONS_NONE) {
+	    return htmlPanel;
+	}
+
+	Container controls = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+	controls.add(htmlPanel);
+
+	switch (buttonMode) {
+	case BUTTONS_SHOW:
+	    controls.add(makeShowButtons()); // FIXME: cache these buttons
+	    break;
+
+	case BUTTONS_GRADE:
+	    controls.add(makeGradeButtons()); // FIXME: cache these buttons
+	    break;
+	}
+
+	return new Panel(controls, Panel.NO_SCROLLBAR, true);
     }
 
     public void setCard(Card card, int numLeft)
@@ -244,13 +320,15 @@ public class FireMIDlet
 	String curTitle = card.categoryName() + "\t"
 			    + Integer.toString(numLeft);
 
-	questionPanel = makePage(makeCardHtml(false).toString());
+	questionPanel = makeDisplay(makePage(makeCardHtml(false).toString()),
+				    BUTTONS_SHOW);
 	questionPanel.setLeftSoftKeyCommand(cmdShow);
 	questionPanel.setRightSoftKeyCommand(cmdExit);
 	questionPanel.setKeyListener(this);
 	questionPanel.setLabel(curTitle);
 
-	answerPanel = makePage(makeCardHtml(true).toString());
+	answerPanel = makeDisplay(makePage(makeCardHtml(true).toString()),
+				  BUTTONS_GRADE);
 	answerPanel.setRightSoftKeyCommand(cmdExit);
 	answerPanel.setKeyListener(this);
 	answerPanel.setLabel(curTitle);
@@ -421,7 +499,7 @@ public class FireMIDlet
 
 	msg.append("</p></body>");
 
-	Panel statPanel = makePage(msg.toString());
+	Panel statPanel = makeDisplay(makePage(msg.toString()), BUTTONS_NONE);
 
 	if (statPanel != null) {
 	    if (returnTo == ANSWER) {
@@ -435,34 +513,11 @@ public class FireMIDlet
 	}
     }
 
-    void showKeyMap()
-    {
-	MapKeysPanel mkp = new MapKeysPanel(screen, this, cmdOk);
-	screen.setCurrent(mkp);
-	current = KEYMAP;
-    }
-
     void showAbout()
     {
-	httpClient.setUrlPrefix(null);
-	Panel aboutPanel = loadPage("file://about.html");
-	aboutPanel.setLabel(versionInfo);
-
-	aboutPanel.setKeyListener(this);
-	aboutPanel.setLeftSoftKeyCommand(cmdOk);
-	aboutPanel.setRightSoftKeyCommand(cmdExit);
-
-	if (aboutPanel != null) {
-	    screen.setCurrent(aboutPanel);
-	}
+	AboutPanel aboutPanel = new AboutPanel(screen, versionInfo);
 	current = ABOUT;
-
-	// XXX Testing XXX
-	Calendar cal = Calendar.getInstance();
-	TimeZone tz = cal.getTimeZone();
-	long tzoff = tz.getRawOffset() /* / 3600000 */;
-	Debug.logln("tzoff=" + Long.toString(tzoff));
-	// XXX Testing XXX
+	screen.setCurrent(aboutPanel);
     }
 
     void showQuestionScreen()
@@ -504,6 +559,22 @@ public class FireMIDlet
 	} else if (cmd.equals(cmdShowA)) {
 	    showAnswerScreen();
 	    return;
+
+	} else if (cmd.equals(cmdButton)) {
+	    // FIXME:
+	    String val = ((InputComponent)c).getValue();
+	    System.out.println("button: " + val);
+
+	    if (val.equals("Show touchscreen buttons")) {
+		InputComponent check = (InputComponent)c;
+		if (check.isChecked()) {
+		    System.out.println("was checked");
+		} else {
+		    System.out.println("wasn't checked");
+		}
+		check.setChecked(!check.isChecked());
+		check.repaint();
+	    }
 	}
 
 	if (current == ABOUT && label.equals(okText)) {
@@ -567,18 +638,6 @@ public class FireMIDlet
     public void keyReleased(int code, Component src)
     {
 	switch (current) {
-	case ABOUT:
-	    switch (code)
-	    {
-	    case FireScreen.KEY_STAR:
-		showCardDirList();
-		break;
-	    case FireScreen.KEY_POUND:
-		showKeyMap();
-		break;
-	    }
-	    break;
-
 	case QUESTION:
 	    switch (code)
 	    {
