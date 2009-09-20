@@ -68,7 +68,12 @@ public class AboutPanel
 {
     protected FireScreen screen;
     protected Command cmdButton;
-    protected Command cmdRedraw;
+    protected Command cmdLeftRightDone;
+    protected Command cmdKeysDone;
+
+    protected gr.fire.core.CommandListener masterPanel;
+    protected Command cmdLeft;
+    protected Command cmdRight;
 
     protected InputComponent smallRadio;
     protected InputComponent mediumRadio;
@@ -105,18 +110,31 @@ public class AboutPanel
     protected final String mediumText= "medium";
     protected final String largeText= "large";
 
-    protected int fontSize = 0; // 0 = small, 1 = medium, 2 = large
-    protected boolean touchScreen = false;
+    public int fontSize = Font.SIZE_SMALL;
+    public boolean touchScreen = true;
+    public int keys[];
 
-    public AboutPanel(FireScreen screen, String versionInfo)
+    public AboutPanel(FireScreen screen, String versionInfo,
+		      gr.fire.core.CommandListener masterPanel,
+		      Command cmdLeft, Command cmdRight)
     {
 	super(null, Panel.VERTICAL_SCROLLBAR, true);
+
+	this.masterPanel = masterPanel;
+	this.cmdLeft = cmdLeft;
+	this.cmdRight = cmdRight;
+	setCommandListener(this);	
+	setLeftSoftKeyCommand(cmdLeft);
+	setRightSoftKeyCommand(cmdRight);
+
+	keys = new int[MapKeysPanel.keyQuery.length];
 
 	this.screen = screen;
 	screenWidth = screen.getWidth();
 
 	cmdButton = new Command("invisible", Command.OK, 1);
-	cmdRedraw = new Command("redraw", Command.OK, 1);
+	cmdLeftRightDone = new Command("invisible", Command.OK, 1);
+	cmdKeysDone = new Command("invisible", Command.OK, 1);
 	Container aboutCnt = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 
 	// setup fonts
@@ -242,6 +260,8 @@ public class AboutPanel
 	checkbox.setBackgroundColor(0xaaaaaa); // FIXME: adjust
 	checkbox.setPrefSize(InputComponent.RADIO_WIDTH,
 			     InputComponent.RADIO_HEIGHT);
+	checkbox.setLeftSoftKeyCommand(cmdLeft);
+	checkbox.setRightSoftKeyCommand(cmdRight);
 	checkbox.validate();
 
 	TextComponent title = new TextComponent("  " + text,
@@ -273,6 +293,8 @@ public class AboutPanel
 	button.setForegroundColor(0x000000); // FIXME: adjust
 	button.setBackgroundColor(0xaaaaaa); // FIXME: adjust
 	button.setPrefSize(screenWidth, buttonHeight);
+	button.setLeftSoftKeyCommand(cmdLeft);
+	button.setRightSoftKeyCommand(cmdRight);
 	button.validate();
 
 	row.add(button);
@@ -297,6 +319,8 @@ public class AboutPanel
 	radio.setBackgroundColor(0xaaaaaa); // FIXME: adjust
 	radio.setPrefSize(InputComponent.RADIO_WIDTH,
 			  InputComponent.RADIO_HEIGHT);
+	radio.setLeftSoftKeyCommand(cmdLeft);
+	radio.setRightSoftKeyCommand(cmdRight);
 	radio.validate();
 
 	TextComponent title = new TextComponent("  " + text,
@@ -348,11 +372,11 @@ public class AboutPanel
 	touchscreenCheck.setChecked(touchScreen);
 	touchscreenCheck.repaint();
 
-	smallRadio.setChecked(fontSize == 0);
+	smallRadio.setChecked(fontSize == Font.SIZE_SMALL);
 	smallRadio.repaint();
-	mediumRadio.setChecked(fontSize == 1);
+	mediumRadio.setChecked(fontSize == Font.SIZE_MEDIUM);
 	mediumRadio.repaint();
-	largeRadio.setChecked(fontSize == 2);
+	largeRadio.setChecked(fontSize == Font.SIZE_LARGE);
 	largeRadio.repaint();
     }
 
@@ -365,7 +389,7 @@ public class AboutPanel
     {
 	System.out.println("--AboutPanel.commandAction(Component)"); // XXX
 
-	if (cmd.equals(cmdButton)) {
+	if (cmdButton.equals(cmd)) {
 	    InputComponent input = (InputComponent)c;
 	    String val = input.getValue();
 
@@ -377,55 +401,38 @@ public class AboutPanel
 
 	    } else if (leftrightText.equals(val)) {
 		MapCommandKeysPanel mkp =
-		    new MapCommandKeysPanel(screen, this, cmdRedraw);
+		    new MapCommandKeysPanel(screen, this, cmdLeftRightDone);
 		screen.setCurrent(mkp);
 
 	    } else if (gradingkeysText.equals(val)) {
-		// FIXME: todo
+		MapKeysPanel mkp = new MapKeysPanel(screen, this, cmdKeysDone);
+		screen.setCurrent(mkp);
 
 	    } else if (smallText.equals(val)) {
-		fontSize = 0;
+		fontSize = Font.SIZE_SMALL;
 	    } else if (mediumText.equals(val)) {
-		fontSize = 1;
+		fontSize = Font.SIZE_MEDIUM;
 	    } else if (largeText.equals(val)) {
-		fontSize = 2;
+		fontSize = Font.SIZE_LARGE;
 	    }
 
 	    repaintControls();
 
-	} else if (cmd.equals(cmdRedraw)) {
+	} else if (cmdLeftRightDone.equals(cmd)) {
 	    screen.setCurrent(this);
 	    repaintControls();
-	}
 
-	/* //FIXME:
-	if (current == ABOUT && label.equals(okText)) {
-	    if (config.cardPath.equals("")
-		|| !(FindCardDir.isCardDir(new StringBuffer(config.cardPath))))
-	    {
-		showCardDirList();
-	    } else {
-		startWait(loadingText, 1, 0);
-		loadCards();
-		//carddb.dumpCards();
-		showNextQuestion();
-		checkExportTime();
+	} else if (cmdKeysDone.equals(cmd)) {
+	    MapKeysPanel mkp = (MapKeysPanel)c;
+	    for (int i=0; i < mkp.keyCode.length; ++i) {
+		keys[i] = mkp.keyCode[i];
 	    }
-	} else if (current == KEYMAP && label.equals(okText)) {
-	    config.leftSoftKey = screen.leftSoftKey;
-	    config.rightSoftKey = screen.rightSoftKey;
-	    config.save();
-	    showAbout();
+	    screen.setCurrent(this);
+	    repaintControls();
 
-	} else if (label.equals(showText)) {
-	    showAnswerScreen();
-
-	} else if (label.equals(exitText)) {
-	    startWait(savingText, 1, 0);
-	    saveCards();
-	    notifyDestroyed();
+	} else if (cmdLeft.equals(cmd) || cmdRight.equals(cmd)) {
+	    masterPanel.commandAction(cmd, (Component)this);
 	}
-	*/
     }
 }
 

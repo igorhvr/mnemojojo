@@ -16,6 +16,7 @@
  * TODO:
  *  - sign and run on phone (get rid of security warnings)
  *  - does not stop at end of new cards!
+ *  - set the button foregound and background colours from the theme
  *  
  */
 package mnemojojo;
@@ -245,7 +246,8 @@ public class FireMIDlet
     }
 
     // from Fire demo: SimpleCalc.java
-    private Panel makeButtonRow(String symbols[])
+    private Panel makeButtonRow(String symbols[],
+				Command cmdLeft, Command cmdRight)
     {
 	Container pad = new Container(new GridLayout(1, symbols.length));
 	InputComponent button;
@@ -257,9 +259,12 @@ public class FireMIDlet
 	    button = new InputComponent(InputComponent.BUTTON);
 	    button.setValue(symbols[i]); 
 	    button.setCommandListener(this);
+	    button.setKeyListener(this);
 	    button.setCommand(cmdButton);
-	    button.setLeftSoftKeyCommand(cmdButton); // FIXME: keep this?
-	    button.setForegroundColor(0xFF0000); // FIXME: adjust
+	    button.setLeftSoftKeyCommand(cmdLeft);
+	    button.setRightSoftKeyCommand(cmdRight);
+	    button.setForegroundColor(0x000000); // FIXME: adjust
+	    button.setBackgroundColor(0xaaaaaa); // FIXME: adjust
 	    button.setFont(buttonFont);
 	    button.setLayout(FireScreen.CENTER | FireScreen.VCENTER);
 	    pad.add(button);
@@ -272,19 +277,20 @@ public class FireMIDlet
 	return padPane;
     }
 
-    private Panel makeGradeButtons()
+    private Panel makeGradeButtons(Command cmdLeft, Command cmdRight)
     {
 	String buttons[] = {"0", "1", "2", "3", "4", "5"};
-	return makeButtonRow(buttons);
+	return makeButtonRow(buttons, cmdLeft, cmdRight);
     }
 
-    private Panel makeShowButtons()
+    private Panel makeShowButtons(Command cmdLeft, Command cmdRight)
     {
-	String buttons[] = {showAnswerText};
-	return makeButtonRow(buttons);
+	String buttons[] = {showAnswerText, showStatsText, skipCardText};
+	return makeButtonRow(buttons, cmdLeft, cmdRight);
     }
 
-    private Panel makeDisplay(Page htmlPage, int buttonMode)
+    private Panel makeDisplay(Page htmlPage, int buttonMode,
+			      Command cmdLeft, Command cmdRight)
     {
 	boolean htmlDecorations = (buttonMode == BUTTONS_NONE);
 
@@ -293,6 +299,9 @@ public class FireMIDlet
 				    Panel.VERTICAL_SCROLLBAR, htmlDecorations);
 	htmlPanel.setCommandListener(this);
 	htmlPanel.setDragScroll(true);
+	htmlPanel.setKeyListener(this);
+	htmlPanel.setLeftSoftKeyCommand(cmdLeft);
+	htmlPanel.setRightSoftKeyCommand(cmdRight);
 
 	if (buttonMode == BUTTONS_NONE) {
 	    return htmlPanel;
@@ -303,15 +312,21 @@ public class FireMIDlet
 
 	switch (buttonMode) {
 	case BUTTONS_SHOW:
-	    controls.add(makeShowButtons()); // FIXME: cache these buttons
+	    controls.add(makeShowButtons(cmdLeft, cmdRight)); // FIXME: cache these buttons
 	    break;
 
 	case BUTTONS_GRADE:
-	    controls.add(makeGradeButtons()); // FIXME: cache these buttons
+	    controls.add(makeGradeButtons(cmdLeft, cmdRight)); // FIXME: cache these buttons
 	    break;
 	}
 
-	return new Panel(controls, Panel.NO_SCROLLBAR, true);
+	Panel outer = new Panel(controls, Panel.NO_SCROLLBAR, true);
+	outer.setCommandListener(this);
+	outer.setKeyListener(this);
+	outer.setLeftSoftKeyCommand(cmdLeft);
+	outer.setRightSoftKeyCommand(cmdRight);
+
+	return outer;
     }
 
     public void setCard(Card card, int numLeft)
@@ -321,14 +336,14 @@ public class FireMIDlet
 			    + Integer.toString(numLeft);
 
 	questionPanel = makeDisplay(makePage(makeCardHtml(false).toString()),
-				    BUTTONS_SHOW);
+				    BUTTONS_SHOW, cmdShow, cmdExit);
 	questionPanel.setLeftSoftKeyCommand(cmdShow);
 	questionPanel.setRightSoftKeyCommand(cmdExit);
 	questionPanel.setKeyListener(this);
 	questionPanel.setLabel(curTitle);
 
 	answerPanel = makeDisplay(makePage(makeCardHtml(true).toString()),
-				  BUTTONS_GRADE);
+				  BUTTONS_GRADE, null, cmdExit);
 	answerPanel.setRightSoftKeyCommand(cmdExit);
 	answerPanel.setKeyListener(this);
 	answerPanel.setLabel(curTitle);
@@ -499,15 +514,18 @@ public class FireMIDlet
 
 	msg.append("</p></body>");
 
-	Panel statPanel = makeDisplay(makePage(msg.toString()), BUTTONS_NONE);
+	Command cmdAction;
+	if (returnTo == ANSWER) {
+	    cmdAction = cmdShowA;
+	} else {
+	    cmdAction = cmdShowQ;
+	}
+
+	Panel statPanel = makeDisplay(makePage(msg.toString()), BUTTONS_NONE,
+				       null, cmdAction);
 
 	if (statPanel != null) {
-	    if (returnTo == ANSWER) {
-		statPanel.setRightSoftKeyCommand(cmdShowA);
-	    } else {
-		statPanel.setRightSoftKeyCommand(cmdShowQ);
-	    }
-
+	    statPanel.setRightSoftKeyCommand(cmdAction);
 	    statPanel.setLabel(statisticsText);
 	    screen.setCurrent(statPanel);
 	}
@@ -515,7 +533,20 @@ public class FireMIDlet
 
     void showAbout()
     {
-	AboutPanel aboutPanel = new AboutPanel(screen, versionInfo);
+	AboutPanel aboutPanel = new AboutPanel(screen, versionInfo,
+					this, cmdOk, cmdExit);
+
+	// copy across the current configured values
+	aboutPanel.fontSize = config.fontSize;
+	aboutPanel.touchScreen = config.showButtons;
+	int i = 0;
+	while (i < 6) {
+	    aboutPanel.keys[i] = config.gradeKey[i];
+	    ++i;
+	}
+	aboutPanel.keys[i++] = config.statKey;
+	aboutPanel.keys[i++] = config.skipKey;
+
 	current = ABOUT;
 	screen.setCurrent(aboutPanel);
     }
@@ -549,6 +580,7 @@ public class FireMIDlet
 
     public void commandAction(javax.microedition.lcdui.Command cmd, Component c)
     {
+	System.out.println("FireMIDLet: commandAction(Component)"); // XXX
 	String label = cmd.getLabel();
 
 	if (cmd.equals(cmdShowQ)) {
@@ -561,23 +593,50 @@ public class FireMIDlet
 	    return;
 
 	} else if (cmd.equals(cmdButton)) {
-	    // FIXME:
 	    String val = ((InputComponent)c).getValue();
 	    System.out.println("button: " + val);
 
-	    if (val.equals("Show touchscreen buttons")) {
-		InputComponent check = (InputComponent)c;
-		if (check.isChecked()) {
-		    System.out.println("was checked");
-		} else {
-		    System.out.println("wasn't checked");
-		}
-		check.setChecked(!check.isChecked());
-		check.repaint();
+	    if (showAnswerText.equals(val)) {
+		showAnswerScreen();
+
+	    } else if (skipCardText.equals(val)) {
+		curCard.skip = true;
+		showNextQuestion();
+
+	    } else if (showStatsText.equals(val)) {
+		showStats(current);
+
+	    } else {
+		try {
+		    doGrade(Integer.parseInt(val));
+		    showNextQuestion();
+		} catch (NumberFormatException e) { }
 	    }
+
 	}
 
 	if (current == ABOUT && label.equals(okText)) {
+
+	    // FIXME: copy from about back to config
+	    AboutPanel aboutPanel = (AboutPanel)c;
+
+	    // copy across the current configured values
+	    aboutPanel.fontSize = config.fontSize;
+	    aboutPanel.touchScreen = config.showButtons;
+	    int i = 0;
+	    while (i < 6) {
+		aboutPanel.keys[i] = config.gradeKey[i];
+		++i;
+	    }
+	    aboutPanel.keys[i++] = config.statKey;
+	    aboutPanel.keys[i++] = config.skipKey;
+
+	    config.leftSoftKey = screen.leftSoftKey;
+	    config.rightSoftKey = screen.rightSoftKey;
+	    config.save();
+
+
+
 	    if (config.cardPath.equals("")
 		|| !(FindCardDir.isCardDir(new StringBuffer(config.cardPath))))
 	    {
@@ -589,11 +648,6 @@ public class FireMIDlet
 		showNextQuestion();
 		checkExportTime();
 	    }
-	} else if (current == KEYMAP && label.equals(okText)) {
-	    config.leftSoftKey = screen.leftSoftKey;
-	    config.rightSoftKey = screen.rightSoftKey;
-	    config.save();
-	    showAbout();
 
 	} else if (label.equals(showText)) {
 	    showAnswerScreen();
@@ -607,6 +661,7 @@ public class FireMIDlet
 
     public void commandAction(javax.microedition.lcdui.Command cmd, Displayable dis)
     {
+	System.out.println("FireMIDLet: commandAction(Displayable)"); // XXX
 	String title = dis.getTitle();
 	String label = cmd.getLabel();
 

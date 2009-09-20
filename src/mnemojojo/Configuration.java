@@ -17,6 +17,9 @@ package mnemojojo;
 import java.lang.*;
 import javax.microedition.rms.RecordStore;
 import javax.microedition.rms.RecordStoreException;
+import javax.microedition.lcdui.Font;
+
+import gr.fire.core.FireScreen;
 
 public class Configuration
 {
@@ -25,7 +28,23 @@ public class Configuration
     public int leftSoftKey;
     public int rightSoftKey;
 
+    public boolean showButtons;
+    public int gradeKey[];
+    public int skipKey;
+    public int statKey;
+    public int fontSize;
+
+    public int defaultGradeKey[] = {
+	    FireScreen.KEY_NUM0,
+	    FireScreen.KEY_NUM1,
+	    FireScreen.KEY_NUM2,
+	    FireScreen.KEY_NUM3,
+	    FireScreen.KEY_NUM4,
+	    FireScreen.KEY_NUM5
+	};
+
     public Configuration() {
+	gradeKey = new int[defaultGradeKey.length];
 	load();
     }
 
@@ -35,6 +54,7 @@ public class Configuration
 	try {
 	    RecordStore rs = RecordStore.openRecordStore(name, false);
 	    r = new String(rs.getRecord(1));
+	    System.out.println("config: " + name + "=" + r); // XXX
 	    rs.closeRecordStore();
 	} catch (RecordStoreException e) {
 	    r = null;
@@ -83,14 +103,62 @@ public class Configuration
 	} else {
 	    rightSoftKey = Integer.parseInt(v);
 	}
+
+	v = readRecord("show_buttons");
+	if (v == null) {
+	    showButtons = true;
+	} else {
+	    showButtons = v.equals("true");
+	}
+
+	for (int i=0; i < gradeKey.length; ++i) {
+	    v = readRecord("grade_" + Integer.toString(i));
+	    if (v == null) {
+		gradeKey[i] = defaultGradeKey[i];
+	    } else {
+		gradeKey[i] = Integer.parseInt(v);
+	    }
+	    System.out.println("grade_" + Integer.toString(i) + "=" + gradeKey[i]);//XXX
+	}
+
+	v = readRecord("skip_key");
+	if (v == null) {
+	    skipKey = FireScreen.KEY_STAR;
+	} else {
+	    skipKey = Integer.parseInt(v);
+	}
+
+	v = readRecord("stat_key");
+	if (v == null) {
+	    statKey = FireScreen.KEY_POUND;
+	} else {
+	    statKey = Integer.parseInt(v);
+	}
+
+	v = readRecord("font_size");
+	if (v == null) {
+	    fontSize = Font.SIZE_SMALL;
+	} else {
+	    fontSize = Integer.parseInt(v);
+	}
     }
 
     public void save()
     {
 	writeRecord("cardpath", cardPath);
 	writeRecord("cards_mtime", Long.toString(cards_mtime));
+
 	writeRecord("left_soft_key", Integer.toString(leftSoftKey));
 	writeRecord("right_soft_key", Integer.toString(rightSoftKey));
+	
+	writeRecord("show_buttons", showButtons?"true":"false");
+	for (int i=0; i < gradeKey.length; ++i) {
+	    writeRecord("grade_" + Integer.toString(i),
+			Integer.toString(gradeKey[i]));
+	}
+	writeRecord("skip_key", Integer.toString(skipKey));
+	writeRecord("stat_key", Integer.toString(statKey));
+	writeRecord("font_size", Integer.toString(fontSize));
     }
 }
 

@@ -32,7 +32,7 @@ class MapCommandKeysPanel
     private boolean showingLeft;
     protected FireScreen screen;
     protected CommandListener listener;
-    protected Command doneCmd;
+    protected Command cmdDone;
 
     protected Command pressCmd = new Command(pressText, Command.OK, 1);
 
@@ -42,7 +42,7 @@ class MapCommandKeysPanel
 	
 	screen = s;
 	listener = li;
-	doneCmd = cmd;
+	cmdDone = cmd;
 	setLabel(configureKeysTitle);
 
 	Container cnt = new Container();
@@ -65,7 +65,7 @@ class MapCommandKeysPanel
 	    showingLeft = false;
 	} else {
 	    screen.rightSoftKey = keyCode;
-	    listener.commandAction(doneCmd, (Component)null);
+	    listener.commandAction(cmdDone, (Component)this);
 	}
     }
 }
