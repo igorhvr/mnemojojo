@@ -23,28 +23,20 @@ import gr.fire.core.CommandListener;
 import gr.fire.ui.TextComponent;
 
 class MapCommandKeysPanel
-    extends gr.fire.core.Panel
+    extends SubPanel
 {
-    public String pressText = "Press Me";
-    public String configureKeysTitle = "Configure Command Keys";
-    public String pressInfoText = "Please press the key indicated below.";
+    public static final String pressText = "Press Me";
+    public static final String configureKeysTitle = "Configure Command Keys";
+    public static final String pressInfoText = "Please press the key indicated below.";
 
     private boolean showingLeft;
-    protected FireScreen screen;
-    protected CommandListener listener;
-    protected Command cmdDone;
 
     protected Command pressCmd = new Command(pressText, Command.OK, 1);
 
     public MapCommandKeysPanel(FireScreen s, CommandListener li, Command cmd)
     {
-	super(null, Panel.NO_SCROLLBAR, true);
+	super(configureKeysTitle, s, li, cmd);
 	
-	screen = s;
-	listener = li;
-	cmdDone = cmd;
-	setLabel(configureKeysTitle);
-
 	Container cnt = new Container();
 	cnt.add(new TextComponent(pressInfoText));
 	set(cnt);
@@ -65,7 +57,7 @@ class MapCommandKeysPanel
 	    showingLeft = false;
 	} else {
 	    screen.rightSoftKey = keyCode;
-	    listener.commandAction(cmdDone, (Component)this);
+	    exitPanel();
 	}
     }
 }

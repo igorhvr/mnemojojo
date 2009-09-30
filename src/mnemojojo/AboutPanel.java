@@ -22,38 +22,19 @@ import java.util.Calendar; // XXX
 
 import mnemogogo.mobile.hexcsv.Debug;	// XXX
 
-// TODO: Prune...
-import javax.microedition.io.Connector;
-import javax.microedition.io.HttpConnection;
 import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
-import javax.microedition.midlet.MIDlet;
-import javax.microedition.midlet.MIDletStateChangeException;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
-import javax.microedition.lcdui.List;
-import javax.microedition.lcdui.Choice;
-import javax.microedition.lcdui.Gauge;
-import javax.microedition.lcdui.Alert;
-import javax.microedition.lcdui.AlertType;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Image;
-import javax.microedition.io.Connector;
-import javax.microedition.io.file.FileConnection;
 
-// TODO: Prune...
-import gr.fire.browser.Browser;
-import gr.fire.browser.util.Page;
 import gr.fire.ui.FireTheme;
 import gr.fire.core.FireScreen;
 import gr.fire.core.KeyListener;
 import gr.fire.core.Component;
 import gr.fire.util.Log;
-import gr.fire.util.FireConnector;
-import gr.fire.ui.ProgressbarAnimation;
-
-// for buttons: XXX
 import gr.fire.core.BoxLayout;
 import gr.fire.core.Container;
 import gr.fire.core.GridLayout;
@@ -62,65 +43,49 @@ import gr.fire.ui.ImageComponent;
 import gr.fire.ui.TextComponent;
 
 public class AboutPanel
-    extends Panel
+    extends SubPanel
     implements CommandListener,
 	       gr.fire.core.CommandListener
 {
-    protected FireScreen screen;
-    protected Command cmdButton;
     protected Command cmdLeftRightDone;
     protected Command cmdKeysDone;
+    protected Command cmdChangeDir;
 
-    protected gr.fire.core.CommandListener masterPanel;
-    protected Command cmdLeft;
-    protected Command cmdRight;
-
+    protected InputComponent cardpathBox;
     protected InputComponent smallRadio;
     protected InputComponent mediumRadio;
     protected InputComponent largeRadio;
     protected InputComponent touchscreenCheck;
 
-    protected Font sectionFont;
-    protected Font titleFont;
-    protected Font labelFont;
-    protected Font textFont;
+    protected final static String authorText = "Author";
+    protected final static String mnemosyneText = "Mnemosyne";
+    protected final static String sm2Text = "SM2 Alg.";
+    protected final static String fireguiText = "Fire UI";
 
-    protected int sectionFontHeight;
-    protected int titleFontHeight;
-    protected int labelFontHeight;
-    protected int textFontHeight;
-    protected int buttonHeight;
+    protected final static String configTitleText = "Configuration Options";
+    protected final static String changeCardsText= "Change card directory";
+    protected final static String touchscreenText= "Show touchscreen buttons";
+    protected final static String leftrightText="Configure left and right keys";
+    protected final static String gradingkeysText= "Configure grading keys";
+    protected final static String cardfontText= "Card font size:";
+    protected final static String smallText= "small";
+    protected final static String mediumText= "medium";
+    protected final static String largeText= "large";
+    protected final static String nocardpathText
+				= "(no card directory currently set)";
 
-    protected int screenWidth;
-
-    protected final int controlGap = 10;
-
-    protected final String authorText = "Author";
-    protected final String mnemosyneText = "Mnemosyne";
-    protected final String sm2Text = "SM-2 Algorithm";
-    protected final String fireguiText = "Fire GUI library";
-
-    protected final String configTitleText = "Configuration Options";
-    protected final String changeCardsText= "Change card directory";
-    protected final String touchscreenText= "Show touchscreen buttons";
-    protected final String leftrightText= "Configure left and right keys";
-    protected final String gradingkeysText= "Configure grading keys";
-    protected final String cardfontText= "Card font size:";
-    protected final String smallText= "small";
-    protected final String mediumText= "medium";
-    protected final String largeText= "large";
-
+    public boolean dirty = false;
     public int fontSize = Font.SIZE_SMALL;
     public boolean touchScreen = true;
     public int keys[];
+    public String cardpath;
 
     public AboutPanel(FireScreen screen, String versionInfo,
-		      gr.fire.core.CommandListener masterPanel,
+		      gr.fire.core.CommandListener li,
 		      Command cmdLeft, Command cmdRight)
     {
-	super(null, Panel.VERTICAL_SCROLLBAR, true);
+	super(versionInfo, screen, li, null);
 
-	this.masterPanel = masterPanel;
 	this.cmdLeft = cmdLeft;
 	this.cmdRight = cmdRight;
 	setCommandListener(this);	
@@ -129,34 +94,10 @@ public class AboutPanel
 
 	keys = new int[MapKeysPanel.keyQuery.length];
 
-	this.screen = screen;
-	screenWidth = screen.getWidth();
-
-	cmdButton = new Command("invisible", Command.OK, 1);
 	cmdLeftRightDone = new Command("invisible", Command.OK, 1);
 	cmdKeysDone = new Command("invisible", Command.OK, 1);
+	cmdChangeDir = new Command("invisible", Command.OK, 1);
 	Container aboutCnt = new Container(new BoxLayout(BoxLayout.Y_AXIS));
-
-	// setup fonts
-	sectionFont = Font.getFont(Font.FACE_SYSTEM,
-				   Font.STYLE_BOLD,
-				   Font.SIZE_LARGE);
-	sectionFontHeight = sectionFont.getHeight();
-
-	titleFont = Font.getFont(Font.FACE_SYSTEM,
-				 Font.STYLE_BOLD,
-				 Font.SIZE_MEDIUM);
-	titleFontHeight = titleFont.getHeight();
-
-	textFont = Font.getFont(Font.FACE_SYSTEM,
-				Font.STYLE_PLAIN,
-				Font.SIZE_MEDIUM);
-	textFontHeight = textFont.getHeight();
-
-	labelFont = titleFont;
-	labelFontHeight = titleFontHeight;
-
-	buttonHeight = labelFontHeight * 2;
 
 	// title image
 	try {
@@ -180,16 +121,23 @@ public class AboutPanel
 
 	aboutCnt.add(buttonRow(changeCardsText));
 
+	cardpathBox = new InputComponent(InputComponent.TEXT);
+	cardpathBox.setFont(textFont);
+	cardpathBox.setBorder(false);
+	cardpathBox.setEnabled(false);
+	cardpathBox.setLayout(FireScreen.TOP | FireScreen.CENTER);
+	cardpathBox.validate();
+
+	Container cardpathRow = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+	cardpathRow.add(cardpathBox);
+	cardpathRow.setPrefSize(screenWidth, (int)(textFontHeight * 1.5));
+	aboutCnt.add(cardpathRow);
+
 	touchscreenCheck = checkboxRow(touchscreenText, aboutCnt);
 	aboutCnt.add(buttonRow(leftrightText));
 	aboutCnt.add(buttonRow(gradingkeysText));
 
 	aboutCnt.add(fontsizeRow());
-
-	setLabel(versionInfo);
-	// FIXME: update these
-	//this.setLeftSoftKeyCommand(cmdOk);
-	//this.setRightSoftKeyCommand(cmdExit);
 
 	// XXX Testing XXX
 	Calendar cal = Calendar.getInstance();
@@ -200,143 +148,6 @@ public class AboutPanel
 
 	set(aboutCnt);
 	repaintControls();
-    }
-
-    private Container titleRow(String title, int extraGap)
-    {
-	Container row = new Container(new BoxLayout(BoxLayout.Y_AXIS));
-
-	int titleWidth = screenWidth / 2;
-	
-	TextComponent titleCmp = new TextComponent(title, screenWidth);
-	titleCmp.setFont(sectionFont);
-
-	int valign = FireScreen.TOP;
-	if (extraGap > 0) {
-	    valign = FireScreen.BOTTOM;
-	}
-
-	titleCmp.setLayout(valign | FireScreen.CENTER);
-	titleCmp.validate();
-
-	row.add(titleCmp);
-	row.setPrefSize(screenWidth, sectionFontHeight + extraGap);
-
-	return row;
-    }
-
-    private Container fieldRow(String title, String text)
-    {
-	Container row = new Container(new BoxLayout(BoxLayout.X_AXIS));
-
-	int titleWidth = screenWidth / 2;
-	
-	TextComponent titleCmp = new TextComponent(title + ":", titleWidth);
-	titleCmp.setFont(titleFont);
-	titleCmp.setLayout(FireScreen.TOP | FireScreen.LEFT);
-	titleCmp.validate();
-
-	TextComponent textCmp = new TextComponent(text, titleWidth);
-	textCmp.setFont(textFont);
-	textCmp.setLayout(FireScreen.TOP | FireScreen.LEFT);
-	textCmp.validate();
-
-	row.add(titleCmp);
-	row.add(textCmp);
-	row.setPrefSize(screenWidth, titleFontHeight);
-
-	return row;
-    }
-
-    private InputComponent checkboxRow(String text, Container cnt)
-    {
-	Container row = new Container(new BoxLayout(BoxLayout.X_AXIS));
-
-	InputComponent checkbox = new InputComponent(InputComponent.CHECKBOX);
-	checkbox.setValue(text);
-	checkbox.setCommandListener(this);
-	checkbox.setCommand(cmdButton);
-	checkbox.setLayout(FireScreen.CENTER | FireScreen.VCENTER);
-	checkbox.setBackgroundColor(0xaaaaaa); // FIXME: adjust
-	checkbox.setPrefSize(InputComponent.RADIO_WIDTH,
-			     InputComponent.RADIO_HEIGHT);
-	checkbox.setLeftSoftKeyCommand(cmdLeft);
-	checkbox.setRightSoftKeyCommand(cmdRight);
-	checkbox.validate();
-
-	TextComponent title = new TextComponent("  " + text,
-				screenWidth - InputComponent.RADIO_WIDTH);
-	title.setFont(labelFont);
-	title.setLayout(FireScreen.LEFT | FireScreen.VCENTER);
-	title.validate();
-
-	row.add(checkbox);
-	row.add(title);
-	row.setPrefSize(screenWidth, labelFontHeight + controlGap);
-	row.validate();
-
-	cnt.add(row);
-
-	return checkbox;
-    }
-
-    private Container buttonRow(String text)
-    {
-	Container row = new Container(new BoxLayout(BoxLayout.X_AXIS));
-
-	InputComponent button = new InputComponent(InputComponent.BUTTON);
-	button.setValue(text);
-	button.setCommandListener(this);
-	button.setCommand(cmdButton);
-	button.setFont(labelFont);
-	button.setLayout(FireScreen.CENTER | FireScreen.VCENTER);
-	button.setForegroundColor(0x000000); // FIXME: adjust
-	button.setBackgroundColor(0xaaaaaa); // FIXME: adjust
-	button.setPrefSize(screenWidth, buttonHeight);
-	button.setLeftSoftKeyCommand(cmdLeft);
-	button.setRightSoftKeyCommand(cmdRight);
-	button.validate();
-
-	row.add(button);
-	row.setPrefSize(screenWidth, buttonHeight + controlGap);
-	row.validate();
-
-	return row;
-    }
-
-    private InputComponent radioRow(String text, int width, Container cnt)
-    {
-	Container row = new Container(new BoxLayout(BoxLayout.X_AXIS));
-
-	int inputHeight = Math.max(labelFontHeight,
-				   InputComponent.RADIO_HEIGHT);
-
-	InputComponent radio = new InputComponent(InputComponent.RADIO);
-	radio.setValue(text);
-	radio.setCommandListener(this);
-	radio.setCommand(cmdButton);
-	radio.setLayout(FireScreen.CENTER | FireScreen.VCENTER);
-	radio.setBackgroundColor(0xaaaaaa); // FIXME: adjust
-	radio.setPrefSize(InputComponent.RADIO_WIDTH,
-			  InputComponent.RADIO_HEIGHT);
-	radio.setLeftSoftKeyCommand(cmdLeft);
-	radio.setRightSoftKeyCommand(cmdRight);
-	radio.validate();
-
-	TextComponent title = new TextComponent("  " + text,
-				width - InputComponent.RADIO_WIDTH);
-	title.setFont(labelFont);
-	title.setLayout(FireScreen.LEFT | FireScreen.VCENTER);
-	title.validate();
-
-	row.add(radio);
-	row.add(title);
-	row.setLayout(FireScreen.LEFT | FireScreen.VCENTER);
-	row.setPrefSize(width, inputHeight);
-
-	cnt.add(row);
-
-	return radio;
     }
 
     private Container fontsizeRow()
@@ -352,8 +163,6 @@ public class AboutPanel
 	TextComponent blank1 = new TextComponent("");
 	TextComponent blank2 = new TextComponent("");
 
-	// FIXME: implement this by getTheme(), setFontProperty(), setTheme()
-
 	int radioWidth = screenWidth - titleWidth;
 	row.add(title);
 	smallRadio = radioRow(smallText, radioWidth, row);
@@ -367,7 +176,7 @@ public class AboutPanel
 	return row;
     }
 
-    private void repaintControls()
+    public void repaintControls()
     {
 	touchscreenCheck.setChecked(touchScreen);
 	touchscreenCheck.repaint();
@@ -378,26 +187,34 @@ public class AboutPanel
 	mediumRadio.repaint();
 	largeRadio.setChecked(fontSize == Font.SIZE_LARGE);
 	largeRadio.repaint();
+
+	if (cardpath == null) {
+	    cardpathBox.setValue(nocardpathText);
+	} else {
+	    cardpathBox.setValue(cardpath);
+	}
+	cardpathBox.repaint();
     }
 
     public void commandAction(javax.microedition.lcdui.Command cmd, Displayable d)
     {
-	System.out.println("--AboutPanel.commandAction(Displayable)"); // XXX
     }
 
     public void commandAction(javax.microedition.lcdui.Command cmd, Component c)
     {
-	System.out.println("--AboutPanel.commandAction(Component)"); // XXX
-
 	if (cmdButton.equals(cmd)) {
 	    InputComponent input = (InputComponent)c;
 	    String val = input.getValue();
 
 	    if (changeCardsText.equals(val)) {
-		// FIXME: todo
+		CardDirPanel cdp =
+		    new CardDirPanel(screen, this, cmdChangeDir);
+		screen.setCurrent(cdp);
+		cdp.makeList();
 
 	    } else if (touchscreenText.equals(val)) {
 		touchScreen = !input.isChecked();
+		dirty = true;
 
 	    } else if (leftrightText.equals(val)) {
 		MapCommandKeysPanel mkp =
@@ -410,10 +227,13 @@ public class AboutPanel
 
 	    } else if (smallText.equals(val)) {
 		fontSize = Font.SIZE_SMALL;
+		dirty = true;
 	    } else if (mediumText.equals(val)) {
 		fontSize = Font.SIZE_MEDIUM;
+		dirty = true;
 	    } else if (largeText.equals(val)) {
 		fontSize = Font.SIZE_LARGE;
+		dirty = true;
 	    }
 
 	    repaintControls();
@@ -421,6 +241,7 @@ public class AboutPanel
 	} else if (cmdLeftRightDone.equals(cmd)) {
 	    screen.setCurrent(this);
 	    repaintControls();
+	    dirty = true;
 
 	} else if (cmdKeysDone.equals(cmd)) {
 	    MapKeysPanel mkp = (MapKeysPanel)c;
@@ -429,9 +250,17 @@ public class AboutPanel
 	    }
 	    screen.setCurrent(this);
 	    repaintControls();
+	    dirty = true;
+
+	} else if (cmdChangeDir.equals(cmd)) {
+	    CardDirPanel cdp = (CardDirPanel)c;
+	    cardpath = cdp.cardpath;
+	    screen.setCurrent(this);
+	    repaintControls();
+	    dirty = true;
 
 	} else if (cmdLeft.equals(cmd) || cmdRight.equals(cmd)) {
-	    masterPanel.commandAction(cmd, (Component)this);
+	    exitPanel(cmd);
 	}
     }
 }

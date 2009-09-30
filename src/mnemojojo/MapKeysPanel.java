@@ -27,10 +27,10 @@ import gr.fire.core.BoxLayout;
 import gr.fire.ui.TextComponent;
 
 class MapKeysPanel
-    extends gr.fire.core.Panel
+    extends SubPanel
 {
-    public final String configureKeysTitle = "Configure Keys";
-    public final String pressInfoText = "Please press the key to ";
+    public static final String configureKeysTitle = "Configure Keys";
+    public static final String pressInfoText = "Press the key to ";
 
     public final static String keyQuery[] = {
 	    "assign grade 0",
@@ -46,29 +46,12 @@ class MapKeysPanel
     public int numKeys;
     public int keyCode[];
 
-    protected Font labelFont;
-    protected int labelFontHeight;
-
-    protected FireScreen screen;
-    protected CommandListener listener;
-    protected Command cmdDone;
-
     public MapKeysPanel(FireScreen s, CommandListener li, Command cmd)
     {
-	super(null, Panel.VERTICAL_SCROLLBAR, true);
+	super(configureKeysTitle, s, li, cmd);
 	
-	screen = s;
-	listener = li;
-	cmdDone = cmd;
-	setLabel(configureKeysTitle);
-
 	numKeys = keyQuery.length;
 	keyCode = new int[numKeys];
-
-	labelFont = Font.getFont(Font.FACE_SYSTEM,
-				 Font.STYLE_PLAIN,
-				 Font.SIZE_MEDIUM);
-	labelFontHeight = labelFont.getHeight();
 
 	showQuery();
     }
@@ -98,7 +81,7 @@ class MapKeysPanel
 	currentKey++;
 
 	if (currentKey == numKeys) {
-	    listener.commandAction(cmdDone, (Component)this);
+	    exitPanel();
 	} else {
 	    showQuery();
 	}

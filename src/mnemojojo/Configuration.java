@@ -14,6 +14,8 @@
 
 package mnemojojo;
 
+import mnemogogo.mobile.hexcsv.Progress;
+
 import java.lang.*;
 import javax.microedition.rms.RecordStore;
 import javax.microedition.rms.RecordStoreException;
@@ -23,7 +25,7 @@ import gr.fire.core.FireScreen;
 
 public class Configuration
 {
-    public String cardPath;
+    public String cardpath;
     public long cards_mtime;
     public int leftSoftKey;
     public int rightSoftKey;
@@ -34,7 +36,7 @@ public class Configuration
     public int statKey;
     public int fontSize;
 
-    public int defaultGradeKey[] = {
+    protected final static int defaultGradeKey[] = {
 	    FireScreen.KEY_NUM0,
 	    FireScreen.KEY_NUM1,
 	    FireScreen.KEY_NUM2,
@@ -54,7 +56,6 @@ public class Configuration
 	try {
 	    RecordStore rs = RecordStore.openRecordStore(name, false);
 	    r = new String(rs.getRecord(1));
-	    System.out.println("config: " + name + "=" + r); // XXX
 	    rs.closeRecordStore();
 	} catch (RecordStoreException e) {
 	    r = null;
@@ -64,6 +65,10 @@ public class Configuration
     }
 
     private void writeRecord(String name, String value) {
+	if (value == null) {
+	    return;
+	}
+
 	byte[] data = value.getBytes();
 
 	try {
@@ -78,10 +83,7 @@ public class Configuration
     }
 
     public void load() {
-	cardPath = readRecord("cardpath");
-	if (cardPath == null) {
-	    cardPath = new String("");
-	}
+	cardpath = readRecord("cardpath");
 
 	String v = readRecord("cards_mtime");
 	if (v == null) {
@@ -118,7 +120,6 @@ public class Configuration
 	    } else {
 		gradeKey[i] = Integer.parseInt(v);
 	    }
-	    System.out.println("grade_" + Integer.toString(i) + "=" + gradeKey[i]);//XXX
 	}
 
 	v = readRecord("skip_key");
@@ -143,22 +144,39 @@ public class Configuration
 	}
     }
 
-    public void save()
+    public void save(Progress progress)
     {
-	writeRecord("cardpath", cardPath);
+	progress.startOperation(8 + gradeKey.length);
+
+	writeRecord("cardpath", cardpath);
+	progress.updateOperation(1);
+
 	writeRecord("cards_mtime", Long.toString(cards_mtime));
+	progress.updateOperation(1);
 
 	writeRecord("left_soft_key", Integer.toString(leftSoftKey));
+	progress.updateOperation(1);
+
 	writeRecord("right_soft_key", Integer.toString(rightSoftKey));
+	progress.updateOperation(1);
 	
 	writeRecord("show_buttons", showButtons?"true":"false");
+	progress.updateOperation(1);
+
 	for (int i=0; i < gradeKey.length; ++i) {
 	    writeRecord("grade_" + Integer.toString(i),
 			Integer.toString(gradeKey[i]));
+	    progress.updateOperation(1);
 	}
+
 	writeRecord("skip_key", Integer.toString(skipKey));
+	progress.updateOperation(1);
+
 	writeRecord("stat_key", Integer.toString(statKey));
+	progress.updateOperation(1);
+
 	writeRecord("font_size", Integer.toString(fontSize));
+	progress.updateOperation(1);
     }
 }
 

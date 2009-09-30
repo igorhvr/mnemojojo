@@ -12,18 +12,10 @@
  * License for more details.
  */
 
-/*
- * TODO:
- *  - sign and run on phone (get rid of security warnings)
- *  - does not stop at end of new cards!
- *  - set the button foregound and background colours from the theme
- *  
- */
 package mnemojojo;
 
 import java.lang.*;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.util.Date; // XXX
@@ -37,16 +29,10 @@ import javax.microedition.midlet.MIDlet;
 import javax.microedition.midlet.MIDletStateChangeException;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
-import javax.microedition.lcdui.List;
-import javax.microedition.lcdui.Choice;
-import javax.microedition.lcdui.Gauge;
 import javax.microedition.lcdui.Alert;
 import javax.microedition.lcdui.AlertType;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.Font;
-import javax.microedition.lcdui.Image;
-import javax.microedition.io.Connector;
-import javax.microedition.io.file.FileConnection;
 
 import mnemogogo.mobile.hexcsv.Card;
 import mnemogogo.mobile.hexcsv.HexCsv;
@@ -60,25 +46,21 @@ import gr.fire.ui.FireTheme;
 import gr.fire.core.FireScreen;
 import gr.fire.core.KeyListener;
 import gr.fire.core.Component;
+import gr.fire.core.Theme;
 import gr.fire.util.Log;
 import gr.fire.util.FireConnector;
-import gr.fire.ui.ProgressbarAnimation;
 
-// for buttons: XXX
+// for buttons:
 import gr.fire.core.BoxLayout;
 import gr.fire.core.Container;
 import gr.fire.core.GridLayout;
 import gr.fire.ui.InputComponent;
-import gr.fire.ui.ImageComponent;
-import gr.fire.ui.TextComponent;
 
 public class FireMIDlet
     extends Core
     implements CommandListener,
 	       gr.fire.core.CommandListener,
-	       Runnable,
-	       KeyListener,
-	       Progress
+	       KeyListener
 {
     boolean initialized = false;
 
@@ -93,11 +75,10 @@ public class FireMIDlet
     Panel questionPanel;
     Panel answerPanel;
 
-    List activeList;
+    Panel showButtons;
+    Panel gradeButtons;
 
-    private ProgressbarAnimation progressGauge=null;
-    private int progressValue = 0;
-    private int progressTotal = 0;
+    ProgressGauge progressGauge;
 
     Command cmdOk;
     Command cmdExit;
@@ -116,17 +97,23 @@ public class FireMIDlet
     private final int WAIT = 4;
     private final int KEYMAP = 5;
 
-    private final int TASK_NONE = 0;
-    private final int TASK_LOAD = 1;
-    private int task = TASK_NONE;
-
     protected final int BUTTONS_NONE = 0;
     protected final int BUTTONS_SHOW = 1;
     protected final int BUTTONS_GRADE = 2;
 
+    Runtime rt = Runtime.getRuntime(); // XXX
+
+    public void showMemory(String msg) // XXX
+    {
+	System.gc();
+	Debug.logln(msg + ": freeMemory=" + Long.toString(rt.freeMemory())
+			    + " / " +  Long.toString(rt.totalMemory()));
+    }
+
     public FireMIDlet()
     {
-	Debug.logln("FireMIDlet()"); // XXX
+	if (debug) Debug.logln("FireMIDlet()"); // XXX
+	showMemory("before anything"); // XXX
 	//try { // XXX
 	Log.showDebug = debug;
 
@@ -138,6 +125,9 @@ public class FireMIDlet
 	try {
 	    screen.setTheme(new FireTheme("file://theme.properties"));
 	} catch (Exception e) {}
+
+	progressGauge = new ProgressGauge();
+	progressHandler = (Progress)progressGauge;
 
 	httpClient = new HttpClient(new FireConnector());
 	browser = new Browser(httpClient);
@@ -152,6 +142,8 @@ public class FireMIDlet
 	//    Debug.logln("FireMIDlet(): exception: " + e.toString()); // XXX
 	//    e.printStackTrace(); // XXX
 	//} // XXX
+	//
+	showMemory("after midlet init"); // XXX
     }
 
     public void startApp()
@@ -177,22 +169,25 @@ public class FireMIDlet
 
     public void destroyApp(boolean unconditional)
     {
-	startWait(savingText, 1, 0);
+	progressGauge.showGauge(savingText);
 	saveCards();
+	super.destroyApp(unconditional);
 	screen.destroy();
 	notifyDestroyed();
     }
 
-    public void setCardDir(String cardPath)
+    public void setCardDir(String cardpath)
 	throws IOException
     {
-	httpClient.setUrlPrefix(cardPath);
-	path = new StringBuffer(cardPath);
+	httpClient.setUrlPrefix(cardpath);
+	path = new StringBuffer(cardpath);
 	pathLen = path.length();
     }
 
     private Page makePage(String contents)
     {
+	showMemory("makePage"); // XXX
+
 	try {
 	    ByteArrayInputStream in =
 		new ByteArrayInputStream(contents.getBytes("UTF-8"));
@@ -263,8 +258,10 @@ public class FireMIDlet
 	    button.setCommand(cmdButton);
 	    button.setLeftSoftKeyCommand(cmdLeft);
 	    button.setRightSoftKeyCommand(cmdRight);
-	    button.setForegroundColor(0x000000); // FIXME: adjust
-	    button.setBackgroundColor(0xaaaaaa); // FIXME: adjust
+	    button.setForegroundColor(
+		FireScreen.getTheme().getIntProperty("button.fg.color"));
+	    button.setBackgroundColor(
+		FireScreen.getTheme().getIntProperty("button.bg.color"));
 	    button.setFont(buttonFont);
 	    button.setLayout(FireScreen.CENTER | FireScreen.VCENTER);
 	    pad.add(button);
@@ -272,6 +269,8 @@ public class FireMIDlet
 	
 	Panel padPane = new Panel(pad, Panel.NO_SCROLLBAR, false);		
 	padPane.setShowBackground(true);
+	padPane.setBackgroundColor(
+	    FireScreen.getTheme().getIntProperty("titlebar.bg.color"));
 	padPane.setPrefSize(screen.getWidth(), buttonFont.getHeight() * 2);
 
 	return padPane;
@@ -292,6 +291,9 @@ public class FireMIDlet
     private Panel makeDisplay(Page htmlPage, int buttonMode,
 			      Command cmdLeft, Command cmdRight)
     {
+	if (!config.showButtons) {
+	    buttonMode = BUTTONS_NONE;
+	}
 	boolean htmlDecorations = (buttonMode == BUTTONS_NONE);
 
 	// create a panel to display cards / information
@@ -312,11 +314,17 @@ public class FireMIDlet
 
 	switch (buttonMode) {
 	case BUTTONS_SHOW:
-	    controls.add(makeShowButtons(cmdLeft, cmdRight)); // FIXME: cache these buttons
+	    if (showButtons == null) {
+		showButtons = makeShowButtons(cmdLeft, cmdRight);
+	    }
+	    controls.add(showButtons);
 	    break;
 
 	case BUTTONS_GRADE:
-	    controls.add(makeGradeButtons(cmdLeft, cmdRight)); // FIXME: cache these buttons
+	    if (gradeButtons == null) {
+		gradeButtons = makeGradeButtons(cmdLeft, cmdRight);
+	    }
+	    controls.add(gradeButtons);
 	    break;
 	}
 
@@ -332,6 +340,7 @@ public class FireMIDlet
     public void setCard(Card card, int numLeft)
 	throws Exception, IOException
     {
+	showMemory("setCard"); // XXX
 	String curTitle = card.categoryName() + "\t"
 			    + Integer.toString(numLeft);
 
@@ -389,64 +398,6 @@ public class FireMIDlet
 			 cmdExit, this);
     }
 
-    public void startOperation(int length)
-    {
-	progressValue = 0;
-	progressTotal = length;
-    }
-
-    public void updateOperation(int delta)
-    {
-	progressValue += delta;
-	if (progressGauge != null) {
-	    progressGauge.progress((100 * progressValue) / progressTotal);
-	}
-    }
-
-    void startWait(String msg, int length, int initial)
-    {
-	showGauge(msg);
-    }
-
-    private void showCardDirList()
-    {
-	int selected = -1;
-
-	startWait(lookingText, Gauge.INDEFINITE, Gauge.CONTINUOUS_RUNNING);
-	String[] dbs = FindCardDir.checkStandard();
-	if (dbs == null) {
-	    dbs = FindCardDir.list();
-	}
-
-	if (dbs == null || dbs.length == 0) {
-	    showFatal(nocardsText, true);
-	    return;
-	    //dbs = FindCardDir.standardList();
-	}
-
-	activeList = new List(openTitle, Choice.IMPLICIT);
-	for (int i=0; i < dbs.length; ++i) {
-	    activeList.append(dbs[i].substring(7), null);
-	    if (config.cardPath.equals(dbs[i])) {
-		selected = i;
-	    }
-	}
-
-	Command selectCommand = new Command(openText, Command.ITEM, 1);
-	activeList.setSelectCommand(selectCommand);
-
-	if (selected > 0) {
-	    activeList.setSelectedIndex(selected, true);
-	}
-
-	activeList.addCommand(
-	    new Command(exitText, Command.EXIT, 2));
-	activeList.setCommandListener(this);
-
-	display.setCurrent(activeList);
-	current = CARD_DIRS;
-    }
-
     private void addStatRow(StringBuffer msg, String name, String stat)
     {
 	msg.append("<tr><td>");
@@ -464,6 +415,11 @@ public class FireMIDlet
     private void addStatRow(StringBuffer msg, String name, float stat)
     {
 	addStatRow(msg, name, Float.toString(stat));
+    }
+
+    private void addStatRow(StringBuffer msg, String name, long stat)
+    {
+	addStatRow(msg, name, Long.toString(stat));
     }
 
     private void futureScheduleText(StringBuffer r)
@@ -492,8 +448,10 @@ public class FireMIDlet
     void showStats(int returnTo)
     {
 	StringBuffer msg = new StringBuffer("<body><p><table>");
-	addStatRow(msg, "", config.cardPath);
+	addStatRow(msg, "", config.cardpath);
 	addStatRow(msg, daysRemainingText + ": ", carddb.daysLeft());
+	addStatRow(msg, freeMemoryText + ": ", rt.freeMemory());
+	addStatRow(msg, totalMemoryText + ": ", rt.totalMemory());
 	msg.append("</table>");
 
 	msg.append("<br/><br/>");
@@ -537,6 +495,12 @@ public class FireMIDlet
 					this, cmdOk, cmdExit);
 
 	// copy across the current configured values
+	if (config.cardpath != null && FindCardDir.isCardDir(config.cardpath)) {
+	    aboutPanel.cardpath = config.cardpath;
+	} else {
+	    config.cardpath = null;
+	    aboutPanel.cardpath = null;
+	}
 	aboutPanel.fontSize = config.fontSize;
 	aboutPanel.touchScreen = config.showButtons;
 	int i = 0;
@@ -549,6 +513,7 @@ public class FireMIDlet
 
 	current = ABOUT;
 	screen.setCurrent(aboutPanel);
+	aboutPanel.repaintControls();
     }
 
     void showQuestionScreen()
@@ -578,9 +543,19 @@ public class FireMIDlet
 	}
     }
 
+    public void updateFont(int fontsize)
+    {
+	Theme theme = screen.getTheme();
+	Font cur_font = theme.getFontProperty("xhtml.font");
+	Font new_font = Font.getFont(cur_font.getFace(),
+				     cur_font.getStyle(),
+				     fontsize);
+	theme.setFontProperty("xhtml.font", new_font);
+	screen.setTheme(theme);
+    }
+
     public void commandAction(javax.microedition.lcdui.Command cmd, Component c)
     {
-	System.out.println("FireMIDLet: commandAction(Component)"); // XXX
 	String label = cmd.getLabel();
 
 	if (cmd.equals(cmdShowQ)) {
@@ -615,35 +590,43 @@ public class FireMIDlet
 
 	}
 
-	if (current == ABOUT && label.equals(okText)) {
-
-	    // FIXME: copy from about back to config
+	if (current == ABOUT) {
+	    // Save the settings on both Ok and Exit
 	    AboutPanel aboutPanel = (AboutPanel)c;
 
-	    // copy across the current configured values
-	    aboutPanel.fontSize = config.fontSize;
-	    aboutPanel.touchScreen = config.showButtons;
-	    int i = 0;
-	    while (i < 6) {
-		aboutPanel.keys[i] = config.gradeKey[i];
-		++i;
+	    if (aboutPanel.dirty) {
+		config.cardpath = aboutPanel.cardpath;
+		config.fontSize = aboutPanel.fontSize;
+		config.showButtons = aboutPanel.touchScreen;
+		int i = 0;
+		while (i < 6) {
+		    config.gradeKey[i] = aboutPanel.keys[i];
+		    ++i;
+		}
+		config.statKey = aboutPanel.keys[i++];
+		config.skipKey = aboutPanel.keys[i++];
+
+		config.leftSoftKey = screen.leftSoftKey;
+		config.rightSoftKey = screen.rightSoftKey;
+
+		progressGauge.showGauge(savingConfigText);
+		config.save((Progress)progressGauge);
 	    }
-	    aboutPanel.keys[i++] = config.statKey;
-	    aboutPanel.keys[i++] = config.skipKey;
+	}
 
-	    config.leftSoftKey = screen.leftSoftKey;
-	    config.rightSoftKey = screen.rightSoftKey;
-	    config.save();
+	if ((current == ABOUT) && (label.equals(okText))) {
 
+	    updateFont(config.fontSize);
 
+	    if (config.cardpath == null) {
+		showFatal(selectCarddir, false);
 
-	    if (config.cardPath.equals("")
-		|| !(FindCardDir.isCardDir(new StringBuffer(config.cardPath))))
-	    {
-		showCardDirList();
 	    } else {
-		startWait(loadingText, 1, 0);
+		progressGauge.showGauge(loadingText);
+		showMemory("before loadCards()"); // XXX
 		loadCards();
+		showMemory("after loadCards()"); // XXX
+		progressGauge.hideGauge();
 		//carddb.dumpCards();
 		showNextQuestion();
 		checkExportTime();
@@ -653,15 +636,15 @@ public class FireMIDlet
 	    showAnswerScreen();
 
 	} else if (label.equals(exitText)) {
-	    startWait(savingText, 1, 0);
+	    progressGauge.showGauge(savingText);
 	    saveCards();
+	    progressGauge.hideGauge();
 	    notifyDestroyed();
 	}
     }
 
     public void commandAction(javax.microedition.lcdui.Command cmd, Displayable dis)
     {
-	System.out.println("FireMIDLet: commandAction(Displayable)"); // XXX
 	String title = dis.getTitle();
 	String label = cmd.getLabel();
 
@@ -674,59 +657,38 @@ public class FireMIDlet
 	    showAnswerScreen();
 	    return;
 	}
-
-	if (label.equals(exitText)) {
-	    startWait(savingText, 1, 0);
-	    saveCards();
-	    notifyDestroyed();
-	    return;
-
-	} else if (label.equals(openText)) {
-	    task = TASK_LOAD;
-	    showAbout();
-	    startWait(loadingText, 1, 0);
-	    display.callSerially(this);
-	    return;
-	}
     }
 
     public void keyReleased(int code, Component src)
     {
 	switch (current) {
 	case QUESTION:
-	    switch (code)
-	    {
-	    case FireScreen.KEY_STAR:
+	    if (code == config.skipKey) {
 		curCard.skip = true;
 		showNextQuestion();
-		break;
 
-	    case FireScreen.KEY_POUND:
+	    } else if (code == config.statKey) {
 		showStats(QUESTION);
-		break;
 	    }
 	    break;
 
 	case ANSWER:
 	    int grade = -1;
 
-	    switch(code)
-	    {
-	    case FireScreen.KEY_NUM0: grade = 0; break;
-	    case FireScreen.KEY_NUM1: grade = 1; break;
-	    case FireScreen.KEY_NUM2: grade = 2; break;
-	    case FireScreen.KEY_NUM3: grade = 3; break;
-	    case FireScreen.KEY_NUM4: grade = 4; break;
-	    case FireScreen.KEY_NUM5: grade = 5; break;
-	    case FireScreen.KEY_POUND: showStats(ANSWER); break;
+	    for (int i=0; i < config.gradeKey.length; ++i) {
+		if (code == config.gradeKey[i]) {
+		    grade = i;
+		    break;
+		}
 	    }
 
 	    if (grade != -1) {
 		doGrade(grade);
 		showNextQuestion();
-	    }
 
-	    break;
+	    } else if (code == config.statKey) {
+		showStats(ANSWER);
+	    }
 	
 	default:
 	    break;
@@ -735,63 +697,5 @@ public class FireMIDlet
 
     public void keyRepeated(int code, Component src) {	}
     public void keyPressed(int code, Component src) { }
-
-    public void run()
-    {
-	switch (task) {
-	case TASK_LOAD:
-	    StringBuffer file = new StringBuffer("file://");
-	    file.append(activeList.getString(activeList.getSelectedIndex()));
-	    String newCardPath = file.toString();
-	    activeList = null;
-
-	    config.cardPath = newCardPath;
-	    config.save();
-
-	    try {
-		//setCardDir("file://");
-		setCardDir(config.cardPath.toString());
-	    } catch (IOException e) {
-		showFatal(e.toString(), true);
-		return;
-	    }
-
-	    loadCards();
-	    showNextQuestion();
-
-	    checkExportTime();
-
-	    task = TASK_NONE;
-	    break;
-
-	default:
-	    break;
-	}
-    }
-
-    private void showGauge(String message)
-    {
-	if (progressGauge != null) {
-	    hideGauge();
-	}
-	
-	progressGauge = new ProgressbarAnimation(message);
-	
-	Font font = FireScreen.getTheme().getFontProperty("titlebar.font");
-	int sw = screen.getWidth();
-	int mw = font.stringWidth(message);
-
-	progressGauge.setWidth(sw);
-	progressGauge.setHeight(font.getHeight());
-	screen.addComponent(progressGauge, 6);
-    }
-    
-    private void hideGauge()
-    {
-	if (progressGauge != null) {
-	    screen.removeComponent(progressGauge);
-	    progressGauge=null;
-	}
-    }
 }
 

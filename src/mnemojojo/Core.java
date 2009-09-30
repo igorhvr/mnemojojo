@@ -27,7 +27,6 @@ import javax.microedition.midlet.MIDletStateChangeException;
 
 abstract class Core
     extends MIDlet
-    implements Progress
 {
     protected Configuration config = new Configuration();
     protected HexCsv carddb;
@@ -36,8 +35,10 @@ abstract class Core
     private Date thinking_from;
     private long thinking_msecs = 0;
 
+    Progress progressHandler;
+
     // Messages
-    protected String versionInfo = "MnemoJoJo 0.9.2";
+    protected String versionInfo = "MnemoJoJo 0.9.3";
 
     protected String reviewTitle = "Review Cards";
     protected String openTitle = "Open Cards";
@@ -59,13 +60,13 @@ abstract class Core
     protected String showStatsText = "Stats";
     protected String skipCardText = "Skip";
     protected String closeText = "Close";
-    protected String lookingText = "Searching for cards...";
     protected String loadingText = "Loading cards...";
     protected String unpackingText = "Unpacking cards...";
     protected String savingText = "Saving cards...";
+    protected String savingConfigText = "Saving config...";
     protected String doneText = "There are no new cards to review.";
-    protected String nocardsText = "No cards found!\nPlease export from Mnemosyne.";
     protected String nocardloadedText = "Unexpected error: card not loaded.";
+    protected String selectCarddir = "A card directory must be set before starting.";
 
     protected String statisticsText = "Statistics";
     protected String currentCardText = "Current Card";
@@ -79,6 +80,9 @@ abstract class Core
     protected String updateOverdueText = "An export from Mnemosyne is overdue!";
     protected String updateTomorrowText =
 	"An export from Mnemosyne is due before tomorrow.";
+
+    protected String freeMemoryText = "Free bytes";
+    protected String totalMemoryText = "Total bytes";
 
     protected String forDaysText = "Scheduled cards for the next days";
     protected String inText = "In";
@@ -110,12 +114,9 @@ abstract class Core
 
     public void destroyApp(boolean unconditional)
     {
-	startWait(savingText, 1, 0);
-	saveCards();
 	if (carddb != null) {
 	    carddb.close();
 	}
-	notifyDestroyed();
     }
 
     protected boolean doGrade(int grade)
@@ -143,8 +144,8 @@ abstract class Core
 	}
 
 	try {
-	    carddb = new HexCsv(config.cardPath, this);
-	    setCardDir(config.cardPath);
+	    carddb = new HexCsv(config.cardpath, progressHandler);
+	    setCardDir(config.cardpath);
 	} catch (Exception e) {
 	    showFatal(e.toString(), true);
 	}
@@ -154,7 +155,8 @@ abstract class Core
     {
 	if (carddb != null) {
 	    try {
-		carddb.writeCards(new StringBuffer(config.cardPath), this);
+		carddb.writeCards(new StringBuffer(config.cardpath),
+				  progressHandler);
 	    } catch (IOException e) {
 		showFatal(e.toString(), true);
 	    }
@@ -206,11 +208,8 @@ abstract class Core
     }
 
     abstract void showFatal(String msg, boolean exit);
-    abstract public void startOperation(int length);
-    abstract public void updateOperation(int delta);
-    abstract void setCardDir(String cardPath) throws Exception;
+    abstract void setCardDir(String cardpath) throws Exception;
     abstract void setCard(Card c, int numLeft) throws Exception;
-    abstract void startWait(String msg, int length, int initial);
     abstract void showDone();
 }
 
