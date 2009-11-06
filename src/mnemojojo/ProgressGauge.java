@@ -38,15 +38,16 @@ public class ProgressGauge
 
     private void setGauge(String msg)
     {
-	progressGauge = new ProgressbarAnimation("");
+	progressGauge = new ProgressbarAnimation(msg);
 	progressGauge.setWidth(FireScreen.getScreen().getWidth());
 	progressGauge.setHeight(
 	    FireScreen.getTheme().getFontProperty("titlebar.font").getHeight());
 	progressGauge.setPosition(0,0);
     }
 
-    public void startOperation(int length)
+    public void startOperation(int length, String msg)
     {
+	showGauge(msg);
 	progressValue = 0;
 	progressTotal = length;
     }
@@ -56,8 +57,13 @@ public class ProgressGauge
 	progressValue += delta;
 	if (progressGauge != null) {
 	    progressGauge.progress((100 * progressValue) / progressTotal);
-	    progressGauge.repaint();
+	    FireScreen.getScreen().serviceRepaints();
 	}
+    }
+
+    public void stopOperation()
+    {
+	hideGauge();
     }
 
     void showGauge(String msg)
@@ -68,6 +74,7 @@ public class ProgressGauge
 	    setGauge(msg);
 	    FireScreen.getScreen().addComponent(progressGauge, 6);
 	}
+	FireScreen.getScreen().serviceRepaints();
     }
     
     void hideGauge()

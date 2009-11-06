@@ -16,11 +16,6 @@ package mnemojojo;
 
 import java.lang.*;
 import java.io.IOException;
-import java.util.Date; // XXX
-import java.util.TimeZone; // XXX
-import java.util.Calendar; // XXX
-
-import mnemogogo.mobile.hexcsv.Debug;	// XXX
 
 import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
@@ -41,6 +36,7 @@ import gr.fire.core.GridLayout;
 import gr.fire.ui.InputComponent;
 import gr.fire.ui.ImageComponent;
 import gr.fire.ui.TextComponent;
+import gr.fire.ui.TextArea;
 
 public class AboutPanel
     extends SubPanel
@@ -56,6 +52,8 @@ public class AboutPanel
     protected InputComponent mediumRadio;
     protected InputComponent largeRadio;
     protected InputComponent touchscreenCheck;
+    protected InputComponent cardstoloadNum;
+    protected boolean cardstoloadSet = false;
 
     protected final static String authorText = "Author";
     protected final static String mnemosyneText = "Mnemosyne";
@@ -71,6 +69,7 @@ public class AboutPanel
     protected final static String smallText= "small";
     protected final static String mediumText= "medium";
     protected final static String largeText= "large";
+    protected final static String cardsToLoadText= "Cards to load ahead:";
     protected final static String nocardpathText
 				= "(no card directory currently set)";
 
@@ -79,6 +78,7 @@ public class AboutPanel
     public boolean touchScreen = true;
     public int keys[];
     public String cardpath;
+    public int cardsToLoad;
 
     public AboutPanel(FireScreen screen, String versionInfo,
 		      gr.fire.core.CommandListener li,
@@ -107,9 +107,7 @@ public class AboutPanel
 	    imgCmp.setPrefSize(screen.getWidth(), img.getHeight() + 15);
 	    imgCmp.validate();
 	    aboutCnt.add(imgCmp);
-	} catch (IOException e) {
-	    System.out.println("IO Exception!"); // XXX
-	}
+	} catch (IOException e) { }
 
 	// credits
 	aboutCnt.add(fieldRow(authorText, "Timothy Bourke"));
@@ -139,12 +137,7 @@ public class AboutPanel
 
 	aboutCnt.add(fontsizeRow());
 
-	// XXX Testing XXX
-	Calendar cal = Calendar.getInstance();
-	TimeZone tz = cal.getTimeZone();
-	long tzoff = tz.getRawOffset() /* / 3600000 */;
-	Debug.logln("tzoff=" + Long.toString(tzoff));
-	// XXX Testing XXX
+	cardstoloadNum = numberRow(cardsToLoadText, aboutCnt);
 
 	set(aboutCnt);
 	repaintControls();
@@ -181,6 +174,10 @@ public class AboutPanel
 	touchscreenCheck.setChecked(touchScreen);
 	touchscreenCheck.repaint();
 
+	if (!cardstoloadSet) {
+	    cardstoloadNum.setValue(Integer.toString(cardsToLoad));
+	}
+
 	smallRadio.setChecked(fontSize == Font.SIZE_SMALL);
 	smallRadio.repaint();
 	mediumRadio.setChecked(fontSize == Font.SIZE_MEDIUM);
@@ -215,6 +212,13 @@ public class AboutPanel
 	    } else if (touchscreenText.equals(val)) {
 		touchScreen = !input.isChecked();
 		dirty = true;
+
+	    } else if (cardstoloadNum.equals(input)) {
+		cardstoloadSet = true;
+		dirty = true;
+		TextArea ta = new TextArea(cardstoloadNum);
+		ta.setTitle(cardsToLoadText);
+		FireScreen.getScreen().setCurrent(ta);
 
 	    } else if (leftrightText.equals(val)) {
 		MapCommandKeysPanel mkp =
@@ -260,6 +264,7 @@ public class AboutPanel
 	    dirty = true;
 
 	} else if (cmdLeft.equals(cmd) || cmdRight.equals(cmd)) {
+	    cardsToLoad = Integer.parseInt(cardstoloadNum.getValue());
 	    exitPanel(cmd);
 	}
     }

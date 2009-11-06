@@ -76,7 +76,6 @@ class MapKeysPanel
 
     protected void keyReleased(int keyCode)
     {
-	System.out.println("--keyReleased: " + Integer.toString(keyCode)); // XXX
 	this.keyCode[currentKey] = keyCode;
 	currentKey++;
 

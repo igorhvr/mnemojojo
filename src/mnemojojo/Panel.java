@@ -17,10 +17,21 @@ package mnemojojo;
 import java.lang.*;
 import gr.fire.core.FireScreen;
 import gr.fire.core.Container;
+import javax.microedition.lcdui.Canvas;
 
 class Panel
     extends gr.fire.core.Panel
 {
+    CheckKeys keyChecker;
+    Panel scrollPanel;
+
+    public Panel(Container cnt, int scrollbarPolicy, boolean showDecorations,
+		 CheckKeys keyChecker)
+    {
+	super(cnt, scrollbarPolicy, showDecorations);
+	this.keyChecker = keyChecker;
+    }
+
     public Panel(Container cnt, int scrollbarPolicy, boolean showDecorations)
     {
 	super(cnt, scrollbarPolicy, showDecorations);
@@ -28,34 +39,25 @@ class Panel
 
     protected void keyReleased(int keyCode)
     {
-	if (keyListener != null) {
-	    keyListener.keyReleased(keyCode, this);
-	}
-	/*
-	if (   keyCode == FireScreen.KEY_NUM0
-	    || keyCode == FireScreen.KEY_NUM1
-	    || keyCode == FireScreen.KEY_NUM2
-	    || keyCode == FireScreen.KEY_NUM3
-	    || keyCode == FireScreen.KEY_NUM4
-	    || keyCode == FireScreen.KEY_NUM5
-	    || keyCode == FireScreen.KEY_STAR
-	    || keyCode == FireScreen.KEY_POUND)
+	if ((keyListener != null)
+	    && (keyChecker != null)
+	    && (keyChecker.catchKey(keyCode)))
 	{
-	    if (keyListener != null) {
-		keyListener.keyReleased(keyCode, this);
+	    keyListener.keyReleased(keyCode, this);
+
+	} else if (scrollPanel != null) {
+	    FireScreen screen = FireScreen.getScreen();
+	    int gameCode = screen.getGameAction(keyCode);
+
+	    if (gameCode == Canvas.UP || gameCode == Canvas.DOWN) {
+		scrollPanel.scroll(gameCode, normalVScrollLength);
+	    } else {
+		super.keyReleased(keyCode);
 	    }
+
 	} else {
-	    switch (keyCode)
-	    {
-	    case FireScreen.KEY_NUM6: keyCode = FireScreen.KEY_NUM2; break;
-	    case FireScreen.KEY_NUM7: keyCode = FireScreen.KEY_NUM4; break;
-	    case FireScreen.KEY_NUM8: keyCode = FireScreen.KEY_NUM6; break;
-	    case FireScreen.KEY_NUM9: keyCode = FireScreen.KEY_NUM8; break;
-	    default: break;
-	    }
 	    super.keyReleased(keyCode);
 	}
-	*/
     }
 }
 

@@ -24,6 +24,7 @@ import javax.microedition.lcdui.Font;
 import gr.fire.core.FireScreen;
 
 public class Configuration
+    implements CheckKeys
 {
     public String cardpath;
     public long cards_mtime;
@@ -35,6 +36,9 @@ public class Configuration
     public int skipKey;
     public int statKey;
     public int fontSize;
+    public int cardsToLoad;
+
+    private static final String writingConfigText = "Writing configuration...";
 
     protected final static int defaultGradeKey[] = {
 	    FireScreen.KEY_NUM0,
@@ -108,7 +112,7 @@ public class Configuration
 
 	v = readRecord("show_buttons");
 	if (v == null) {
-	    showButtons = true;
+	    showButtons = false;
 	} else {
 	    showButtons = v.equals("true");
 	}
@@ -142,11 +146,18 @@ public class Configuration
 	} else {
 	    fontSize = Integer.parseInt(v);
 	}
+
+	v = readRecord("cards_to_load");
+	if (v == null) {
+	    cardsToLoad = 50;
+	} else {
+	    cardsToLoad = Integer.parseInt(v);
+	}
     }
 
     public void save(Progress progress)
     {
-	progress.startOperation(8 + gradeKey.length);
+	progress.startOperation(9 + gradeKey.length, writingConfigText);
 
 	writeRecord("cardpath", cardpath);
 	progress.updateOperation(1);
@@ -159,9 +170,10 @@ public class Configuration
 
 	writeRecord("right_soft_key", Integer.toString(rightSoftKey));
 	progress.updateOperation(1);
-	
+
 	writeRecord("show_buttons", showButtons?"true":"false");
 	progress.updateOperation(1);
+
 
 	for (int i=0; i < gradeKey.length; ++i) {
 	    writeRecord("grade_" + Integer.toString(i),
@@ -177,6 +189,26 @@ public class Configuration
 
 	writeRecord("font_size", Integer.toString(fontSize));
 	progress.updateOperation(1);
+
+	writeRecord("cards_to_load", Integer.toString(cardsToLoad));
+	progress.updateOperation(1);
+
+	progress.stopOperation();
+    }
+
+    public boolean catchKey(int keyCode)
+    {
+	if ((keyCode == skipKey) || (keyCode == statKey)) {
+	    return true;
+	}
+
+	for (int i=0; i < gradeKey.length; ++i) {
+	    if (keyCode == gradeKey[i]) {
+		return true;
+	    }
+	}
+
+	return false;
     }
 }
 

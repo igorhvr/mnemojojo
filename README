@@ -1,9 +1,101 @@
+Working:
+    Sony Ericsson K750
 
-Features:
-* Handles images and simple HTML markup.
-* Simple, responsive, interface.
+TODO:
+    * make path exports slashes (/) and not backslashes (\)
+      i.e. do not use join (does not work under windows)
 
-Does not:
-* Yet handle sounds.
-* Allow editing of cards.
+    * ext dots under windows
+
+
+
+MnemoGoGo and MnemoJoJo 0.9.5 are released!
+
+MnemoGoGo is a plugin for Mnemosyne. MnemoJoJo is a J2ME Midlet. Together
+they allow you to review Mnemosyne cards on Java-enabled mobile phones.
+
+!IMPORTANT!
+The export format has changed. Put MnemoGoGo into local mode before
+upgrading. Upgrade both MnemoGoGo and MnemoJoJo simulataneously.
+!IMPORTANT!
+
+Tim.
+
+Features and Fixes
+------------------
+This release contains several major improvements:
+
+* Support for touchscreen phones.
+  There are now optional onscreen buttons for showing the answer and grading
+  cards.
+
+* Card text is exported into a single file.
+  This means that synchronization to phones and sdcards is faster, and that
+  there are far fewer security prompts on older phones. This approach
+  requires more memory at runtime, but a `cards to load ahead' option allows
+  trade-offs to be made.
+
+* All exported filenames are in uppercase.
+  This works around a problem for some Windows drivers that capitalize
+  8.3 filenames during synchronization to phones.
+
+* Configurable font sizes.
+
+* Configurable grading keys.
+  On some phones, like the Nokia E61, the number keys are only accessible
+  after pushing a `shift key'. The grading keys can now be customised to
+  avoid this annoyance.
+
+* Various small bugs fixed.
+  - Different timezones are now properly handled.
+  - Problems in statistics logging are now fixed.
+  - The lack of the Python Imaging Library is treated more gracefully.
+  - Restricting images to a maximum size now works properly.
+
+Phone Status
+------------
+I have been using MnemoGoGo/MnemoJoJo to review my own cards for several
+months and I now consider it reliable enough to recommend for general use.
+This version should be considered a beta release for experienced computer
+users.
+
+Several phones are known to work:
+ * Nokia 6121
+ * Nokia E61
+ * Nokia N95
+ * Nokia 5800 (Express Music) 
+
+Some phones may work (confirmation needed):
+ * Samsung G600
+
+Phones with problems (experienced help needed):
+ * Blackberry 8320
+
+Thanks to everyone who reported issues. Please let me know if MnemoJoJo
+works on your phone if it is not listed above.
+
+Release Schedule
+----------------
+Tasks required before 1.0 release:
+- Improve online documentation.
+- Add instructions for installing Python Imaging Library under Windows.
+  (needed to resize images for display on phones.)
+- Integrate small patch into Mnemosyne official release.
+
+Future work (not scheduled for 1.0 release, any help accepted!)
+- Multithreading
+- Localization
+- Sounds
+
+Source code and licensing
+-------------------------
+MnemoGoGo and MnemoJoJo are provided free of charge and without any warranty
+or guarantees.
+
+The MnemoGoGo (plugin and database) source code contains algorithms ported
+from Peter Bienstman's Mnemosyne. It is released under the GPL version 2.
+
+The MnemoJoJo (user interface) source code will be made available under a
+BSD license soon. It uses a patched version of Pashalis Padeleris' Fire UI
+library.
 

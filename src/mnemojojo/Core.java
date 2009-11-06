@@ -20,7 +20,6 @@ import java.io.IOException;
 import mnemogogo.mobile.hexcsv.HexCsv;
 import mnemogogo.mobile.hexcsv.Progress;
 import mnemogogo.mobile.hexcsv.Card;
-//import mnemogogo.mobile.hexcsv.Debug;	// XXX
 
 import javax.microedition.midlet.MIDlet;
 import javax.microedition.midlet.MIDletStateChangeException;
@@ -38,55 +37,60 @@ abstract class Core
     Progress progressHandler;
 
     // Messages
-    protected String versionInfo = "MnemoJoJo 0.9.3";
+    protected static final String versionInfo = "Mnemojojo 0.9.5";
 
-    protected String reviewTitle = "Review Cards";
-    protected String openTitle = "Open Cards";
-    protected String aboutTitle = "About";
-    protected String errTitle = "Error";
-    protected String waitTitle = "Please wait";
-    protected String doneTitle = "Finished";
-    protected String nocardsTitle = "No cards";
+    protected static final String reviewTitle = "Review Cards";
+    protected static final String openTitle = "Open Cards";
+    protected static final String aboutTitle = "About";
+    protected static final String errTitle = "Error";
+    protected static final String waitTitle = "Please wait";
+    protected static final String doneTitle = "Finished";
+    protected static final String nocardsTitle = "No cards";
 
-    protected String exitText = "Exit";
-    protected String okText = "Ok";
-    protected String aboutText = "About";
-    protected String openText = "Open";
-    protected String gradeText = "Grade";
-    protected String[] gradesText;
-    protected String skipText = "Skip";
-    protected String showText = "Show";
-    protected String showAnswerText = "Show";
-    protected String showStatsText = "Stats";
-    protected String skipCardText = "Skip";
-    protected String closeText = "Close";
-    protected String loadingText = "Loading cards...";
-    protected String unpackingText = "Unpacking cards...";
-    protected String savingText = "Saving cards...";
-    protected String savingConfigText = "Saving config...";
-    protected String doneText = "There are no new cards to review.";
-    protected String nocardloadedText = "Unexpected error: card not loaded.";
-    protected String selectCarddir = "A card directory must be set before starting.";
+    protected static final String exitText = "Exit";
+    protected static final String okText = "Ok";
+    protected static final String aboutText = "About";
+    protected static final String openText = "Open";
+    protected static final String gradeText = "Grade";
+    protected static String[] gradesText;
+    protected static final String skipText = "Skip";
+    protected static final String showText = "Show";
+    protected static final String showAnswerText = "Show";
+    protected static final String showStatsText = "Stats";
+    protected static final String skipCardText = "Skip";
+    protected static final String closeText = "Close";
+    protected static final String doneText
+	    = "There are no new cards to review.";
+    protected static final String nocardloadedText
+	    = "Unexpected error: card not loaded.";
+    protected static final String selectCarddir
+	    = "A card directory must be set before starting.";
+    protected static final String notEnoughMemoryToLoadText
+	    = "Not enough memory to load cards.";
 
-    protected String statisticsText = "Statistics";
-    protected String currentCardText = "Current Card";
-    protected String easinessText = "Easiness";
-    protected String repetitionsText = "Repetitions";
-    protected String lapsesText = "Lapses";
-    protected String daysSinceLastText = "Days since last repetition";
-    protected String daysUntilNextText = "Days until next repetition";
+    protected static final String statisticsText = "Statistics";
+    protected static final String currentCardText = "Current Card";
+    protected static final String easinessText = "Easiness";
+    protected static final String repetitionsText = "Repetitions";
+    protected static final String lapsesText = "Lapses";
+    protected static final String daysSinceLastText
+	    = "Days since last repetition";
+    protected static final String daysUntilNextText
+	    = "Days until next repetition";
 
-    protected String daysRemainingText = "Days until an export is due";
-    protected String updateOverdueText = "An export from Mnemosyne is overdue!";
-    protected String updateTomorrowText =
-	"An export from Mnemosyne is due before tomorrow.";
+    protected static final String cardsdirText = "Cards: ";
+    protected static final String updateOverdueText
+	    = "An export from Mnemosyne is overdue!";
+    protected static final String updateTomorrowText
+	    = "An export from Mnemosyne is due before tomorrow.";
 
-    protected String freeMemoryText = "Free bytes";
-    protected String totalMemoryText = "Total bytes";
+    protected static final String freeMemoryText = "Free bytes: ";
+    protected static final String totalMemoryText = "Total bytes: ";
 
-    protected String forDaysText = "Scheduled cards for the next days";
-    protected String inText = "In";
-    protected String daysText = "day(s)";
+    protected static final String forDaysText
+	    = "Scheduled cards for the next days";
+    protected static final String inText = "In";
+    protected static final String daysText = "day(s)";
 
     protected String[] aboutLines = {
 	    versionInfo,
@@ -98,7 +102,6 @@ abstract class Core
 
     public Core()
     {
-	//Debug.logln("Core()"); // XXX
 	gradesText = new String[6];
 	for (int i=0; i < 6; ++i) {
 	    gradesText[i] = gradeText + " " + Integer.toString(i);
@@ -145,9 +148,13 @@ abstract class Core
 
 	try {
 	    carddb = new HexCsv(config.cardpath, progressHandler);
+	    carddb.cards_to_load = config.cardsToLoad;
 	    setCardDir(config.cardpath);
 	} catch (Exception e) {
 	    showFatal(e.toString(), true);
+	} catch (OutOfMemoryError e) {
+	    carddb = null;
+	    showFatal(notEnoughMemoryToLoadText, true);
 	}
     }
 
@@ -170,8 +177,8 @@ abstract class Core
 	curCard = carddb.getCard();
 
 	try {
+	    setCard(curCard, carddb.numScheduled());
 	    if (curCard != null) {
-		setCard(curCard, carddb.numScheduled());
 		startThinking();
 		return true;
 	    }

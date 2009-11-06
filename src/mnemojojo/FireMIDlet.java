@@ -18,9 +18,6 @@ import java.lang.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
-import java.util.Date; // XXX
-import java.util.TimeZone; // XXX
-import java.util.Calendar; // XXX
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 import javax.microedition.lcdui.Display;
@@ -72,8 +69,9 @@ public class FireMIDlet
     Browser browser;
     FireScreen screen;
 
-    Panel questionPanel;
-    Panel answerPanel;
+    Panel currentPanel;
+    Card currentCard;
+    String currentTitle;
 
     Panel showButtons;
     Panel gradeButtons;
@@ -85,6 +83,7 @@ public class FireMIDlet
     Command cmdShow;
     Command cmdShowQ;
     Command cmdShowA;
+    Command cmdReshow;
     Command cmdButton;
 
     private final boolean debug = false;
@@ -101,9 +100,9 @@ public class FireMIDlet
     protected final int BUTTONS_SHOW = 1;
     protected final int BUTTONS_GRADE = 2;
 
-    Runtime rt = Runtime.getRuntime(); // XXX
+    Runtime rt = Runtime.getRuntime();
 
-    public void showMemory(String msg) // XXX
+    public void showMemory(String msg)
     {
 	System.gc();
 	Debug.logln(msg + ": freeMemory=" + Long.toString(rt.freeMemory())
@@ -113,7 +112,6 @@ public class FireMIDlet
     public FireMIDlet()
     {
 	if (debug) Debug.logln("FireMIDlet()"); // XXX
-	showMemory("before anything"); // XXX
 	//try { // XXX
 	Log.showDebug = debug;
 
@@ -131,19 +129,20 @@ public class FireMIDlet
 
 	httpClient = new HttpClient(new FireConnector());
 	browser = new Browser(httpClient);
+	browser.setImageCachePolicy(true); // keep cache
 
 	cmdOk = new Command(okText, Command.OK, 1); 
 	cmdExit = new Command(exitText, Command.EXIT, 5);
 	cmdShow = new Command(showText, Command.ITEM, 1);
 	cmdShowQ = new Command(closeText, Command.ITEM, 1);
 	cmdShowA = new Command(closeText, Command.ITEM, 1);
+	cmdReshow = new Command(closeText, Command.ITEM, 1);
 	cmdButton = new Command("invisible", Command.OK, 1);
 	//} catch (Exception e) { // XXX
 	//    Debug.logln("FireMIDlet(): exception: " + e.toString()); // XXX
 	//    e.printStackTrace(); // XXX
 	//} // XXX
 	//
-	showMemory("after midlet init"); // XXX
     }
 
     public void startApp()
@@ -169,7 +168,6 @@ public class FireMIDlet
 
     public void destroyApp(boolean unconditional)
     {
-	progressGauge.showGauge(savingText);
 	saveCards();
 	super.destroyApp(unconditional);
 	screen.destroy();
@@ -186,8 +184,6 @@ public class FireMIDlet
 
     private Page makePage(String contents)
     {
-	showMemory("makePage"); // XXX
-
 	try {
 	    ByteArrayInputStream in =
 		new ByteArrayInputStream(contents.getBytes("UTF-8"));
@@ -216,28 +212,30 @@ public class FireMIDlet
 
     StringBuffer makeCardHtml(boolean includeAnswer)
     {
-	StringBuffer msg = new StringBuffer(
+	StringBuffer html = new StringBuffer(
 	    "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<body><p>");
 
-	if (curCard.question == null || curCard.answer == null) {
-	    msg.append(nocardloadedText);
+	String question = curCard.getQuestion();
+	String answer = curCard.getAnswer();
+
+	if (question == null || answer == null) {
+	    html.append(nocardloadedText);
 
 	} else if (includeAnswer) {
-	    if (!curCard.overlay) {
-		msg.append(curCard.question);
-		msg.append("<hr/>");
+	    if (!curCard.getOverlay()) {
+		html.append(question);
+		html.append("<hr/>");
 	    }
 
-	    msg.append(curCard.answer);
+	    html.append(answer);
 
 	} else {
-	    msg.append(curCard.question);
+	    html.append(question);
 	}
 
-	msg.append("</p></body>");
+	html.append("</p></body>");
 
-	return msg;
-
+	return html;
     }
 
     // from Fire demo: SimpleCalc.java
@@ -284,7 +282,7 @@ public class FireMIDlet
 
     private Panel makeShowButtons(Command cmdLeft, Command cmdRight)
     {
-	String buttons[] = {showAnswerText, showStatsText, skipCardText};
+	String buttons[] = {skipCardText, showAnswerText, showStatsText};
 	return makeButtonRow(buttons, cmdLeft, cmdRight);
     }
 
@@ -298,7 +296,9 @@ public class FireMIDlet
 
 	// create a panel to display cards / information
 	Panel htmlPanel = new Panel(htmlPage.getPageContainer(),
-				    Panel.VERTICAL_SCROLLBAR, htmlDecorations);
+				    Panel.VERTICAL_SCROLLBAR,
+				    htmlDecorations,
+				    config);
 	htmlPanel.setCommandListener(this);
 	htmlPanel.setDragScroll(true);
 	htmlPanel.setKeyListener(this);
@@ -334,28 +334,19 @@ public class FireMIDlet
 	outer.setLeftSoftKeyCommand(cmdLeft);
 	outer.setRightSoftKeyCommand(cmdRight);
 
+	outer.scrollPanel = htmlPanel;
+
 	return outer;
     }
 
     public void setCard(Card card, int numLeft)
 	throws Exception, IOException
     {
-	showMemory("setCard"); // XXX
-	String curTitle = card.categoryName() + "\t"
-			    + Integer.toString(numLeft);
-
-	questionPanel = makeDisplay(makePage(makeCardHtml(false).toString()),
-				    BUTTONS_SHOW, cmdShow, cmdExit);
-	questionPanel.setLeftSoftKeyCommand(cmdShow);
-	questionPanel.setRightSoftKeyCommand(cmdExit);
-	questionPanel.setKeyListener(this);
-	questionPanel.setLabel(curTitle);
-
-	answerPanel = makeDisplay(makePage(makeCardHtml(true).toString()),
-				  BUTTONS_GRADE, null, cmdExit);
-	answerPanel.setRightSoftKeyCommand(cmdExit);
-	answerPanel.setKeyListener(this);
-	answerPanel.setLabel(curTitle);
+	if (card != null) {
+	    currentTitle = card.categoryName() + "\t"
+				+ Integer.toString(numLeft);
+	}
+	currentCard = card;
     }
 
     void checkExportTime()
@@ -447,15 +438,16 @@ public class FireMIDlet
 
     void showStats(int returnTo)
     {
-	StringBuffer msg = new StringBuffer("<body><p><table>");
-	addStatRow(msg, "", config.cardpath);
-	addStatRow(msg, daysRemainingText + ": ", carddb.daysLeft());
-	addStatRow(msg, freeMemoryText + ": ", rt.freeMemory());
-	addStatRow(msg, totalMemoryText + ": ", rt.totalMemory());
-	msg.append("</table>");
+	int daysLeft = carddb.daysLeft();
+	StringBuffer msg = new StringBuffer("<body><p>");
 
-	msg.append("<br/><br/>");
-	futureScheduleText(msg);
+	if (daysLeft <= 0) {
+	    msg.append(updateOverdueText);
+	} else if (daysLeft == 1) {
+	    msg.append(updateTomorrowText);
+	} else {
+	    futureScheduleText(msg);
+	}
 
 	if (curCard != null) {
 	    msg.append("<br/><br/><table>");
@@ -470,20 +462,17 @@ public class FireMIDlet
 	    msg.append("</table>");
 	}
 
-	msg.append("</p></body>");
-
-	Command cmdAction;
-	if (returnTo == ANSWER) {
-	    cmdAction = cmdShowA;
-	} else {
-	    cmdAction = cmdShowQ;
-	}
+	msg.append("<br/><br/><table>");
+	addStatRow(msg, cardsdirText, config.cardpath);
+	addStatRow(msg, freeMemoryText, rt.freeMemory());
+	addStatRow(msg, totalMemoryText, rt.totalMemory());
+	msg.append("</table></p></body>");
 
 	Panel statPanel = makeDisplay(makePage(msg.toString()), BUTTONS_NONE,
-				       null, cmdAction);
+				       null, cmdReshow);
 
 	if (statPanel != null) {
-	    statPanel.setRightSoftKeyCommand(cmdAction);
+	    statPanel.setRightSoftKeyCommand(cmdReshow);
 	    statPanel.setLabel(statisticsText);
 	    screen.setCurrent(statPanel);
 	}
@@ -502,6 +491,7 @@ public class FireMIDlet
 	    aboutPanel.cardpath = null;
 	}
 	aboutPanel.fontSize = config.fontSize;
+	aboutPanel.cardsToLoad = config.cardsToLoad;
 	aboutPanel.touchScreen = config.showButtons;
 	int i = 0;
 	while (i < 6) {
@@ -518,8 +508,18 @@ public class FireMIDlet
 
     void showQuestionScreen()
     {
-	if (questionPanel != null) {
-	    screen.setCurrent(questionPanel);
+	if (currentCard != null) {
+	    browser.clearImageCache();
+	    currentPanel = makeDisplay(makePage(makeCardHtml(false).toString()),
+					BUTTONS_SHOW, cmdShow, cmdExit);
+	    if (curCard.getOverlay()) {
+		browser.clearImageCache();
+	    }
+	    currentPanel.setLeftSoftKeyCommand(cmdShow);
+	    currentPanel.setRightSoftKeyCommand(cmdExit);
+	    currentPanel.setKeyListener(this);
+	    currentPanel.setLabel(currentTitle);
+	    screen.setCurrent(currentPanel);
 	    current = QUESTION;
 	} else {
 	    showDone();
@@ -528,7 +528,14 @@ public class FireMIDlet
 
     void showAnswerScreen()
     {
-	screen.setCurrent(answerPanel);
+	currentPanel = makeDisplay(makePage(makeCardHtml(true).toString()),
+				  BUTTONS_GRADE, null, cmdExit);
+	browser.clearImageCache();
+	currentPanel.setRightSoftKeyCommand(cmdExit);
+	currentPanel.setKeyListener(this);
+	currentPanel.setLabel(currentTitle);
+
+	screen.setCurrent(currentPanel);
 	current = ANSWER;
     }
 
@@ -566,6 +573,9 @@ public class FireMIDlet
 	} else if (cmd.equals(cmdShowA)) {
 	    showAnswerScreen();
 	    return;
+	
+	} else if (cmd.equals(cmdReshow)) {
+	    screen.setCurrent(currentPanel);
 
 	} else if (cmd.equals(cmdButton)) {
 	    String val = ((InputComponent)c).getValue();
@@ -575,7 +585,7 @@ public class FireMIDlet
 		showAnswerScreen();
 
 	    } else if (skipCardText.equals(val)) {
-		curCard.skip = true;
+		curCard.setSkip();
 		showNextQuestion();
 
 	    } else if (showStatsText.equals(val)) {
@@ -597,6 +607,9 @@ public class FireMIDlet
 	    if (aboutPanel.dirty) {
 		config.cardpath = aboutPanel.cardpath;
 		config.fontSize = aboutPanel.fontSize;
+		if (aboutPanel.cardsToLoad > 0) {
+		    config.cardsToLoad = aboutPanel.cardsToLoad;
+		}
 		config.showButtons = aboutPanel.touchScreen;
 		int i = 0;
 		while (i < 6) {
@@ -609,7 +622,6 @@ public class FireMIDlet
 		config.leftSoftKey = screen.leftSoftKey;
 		config.rightSoftKey = screen.rightSoftKey;
 
-		progressGauge.showGauge(savingConfigText);
 		config.save((Progress)progressGauge);
 	    }
 	}
@@ -622,11 +634,7 @@ public class FireMIDlet
 		showFatal(selectCarddir, false);
 
 	    } else {
-		progressGauge.showGauge(loadingText);
-		showMemory("before loadCards()"); // XXX
 		loadCards();
-		showMemory("after loadCards()"); // XXX
-		progressGauge.hideGauge();
 		//carddb.dumpCards();
 		showNextQuestion();
 		checkExportTime();
@@ -636,9 +644,7 @@ public class FireMIDlet
 	    showAnswerScreen();
 
 	} else if (label.equals(exitText)) {
-	    progressGauge.showGauge(savingText);
 	    saveCards();
-	    progressGauge.hideGauge();
 	    notifyDestroyed();
 	}
     }
@@ -656,6 +662,10 @@ public class FireMIDlet
 	} else if (cmd.equals(cmdShowA)) {
 	    showAnswerScreen();
 	    return;
+
+	} else if (cmd.equals(cmdReshow)) {
+	    screen.setCurrent(currentPanel);
+	    return;
 	}
     }
 
@@ -664,7 +674,7 @@ public class FireMIDlet
 	switch (current) {
 	case QUESTION:
 	    if (code == config.skipKey) {
-		curCard.skip = true;
+		curCard.setSkip();
 		showNextQuestion();
 
 	    } else if (code == config.statKey) {

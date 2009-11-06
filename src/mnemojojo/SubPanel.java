@@ -19,6 +19,7 @@ import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
+import javax.microedition.lcdui.TextField;
 
 import gr.fire.core.FireScreen;
 import gr.fire.core.Component;
@@ -114,8 +115,6 @@ class SubPanel
     {
 	Container row = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 
-	int titleWidth = screenWidth / 2;
-	
 	TextComponent titleCmp = new TextComponent(title, screenWidth);
 	titleCmp.setFont(sectionFont);
 
@@ -144,7 +143,8 @@ class SubPanel
 	titleCmp.setLayout(FireScreen.TOP | FireScreen.LEFT);
 	titleCmp.validate();
 
-	TextComponent textCmp = new TextComponent(text, titleWidth);
+	TextComponent textCmp = new TextComponent(text,
+					screenWidth - titleWidth);
 	textCmp.setFont(textFont);
 	textCmp.setLayout(FireScreen.TOP | FireScreen.LEFT);
 	textCmp.validate();
@@ -187,6 +187,45 @@ class SubPanel
 	cnt.add(row);
 
 	return checkbox;
+    }
+
+    protected InputComponent numberRow(String text, Container cnt)
+    {
+	Container row = new Container(new BoxLayout(BoxLayout.X_AXIS));
+
+	int titleWidth = screenWidth / 2;
+	int numboxWidth = textFont.charWidth('0') * 8;
+
+	TextComponent title = new TextComponent(text + "  ", titleWidth);
+	title.setFont(labelFont);
+	title.setLayout(FireScreen.LEFT | FireScreen.TOP);
+	title.validate();
+
+	InputComponent numbox = new InputComponent(InputComponent.TEXT);
+	numbox.setCommandListener(this);
+	numbox.setLayout(FireScreen.LEFT | FireScreen.VCENTER);
+	numbox.setRows(1);
+	numbox.setValue("");
+	numbox.setCommandListener(this);
+	numbox.setCommand(cmdButton);
+	numbox.setBackgroundColor(buttonBgColor);
+	numbox.setForegroundColor(buttonFgColor);
+	numbox.setPrefSize(numboxWidth, textFontHeight * 2);
+	numbox.addTextConstraints(TextField.NUMERIC);
+	numbox.setLeftSoftKeyCommand(cmdLeft);
+	numbox.setRightSoftKeyCommand(cmdRight);
+	numbox.validate();
+
+	row.add(title);
+	row.add(numbox);
+	row.setPrefSize(screenWidth,
+			Math.max(labelFontHeight, textFontHeight * 2)
+			+ controlGap);
+	row.validate();
+
+	cnt.add(row);
+
+	return numbox;
     }
 
     protected Container buttonRow(String text)
