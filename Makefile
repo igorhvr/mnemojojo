@@ -38,9 +38,10 @@ filesystem:
 	ln -s $(JAVAFILESYS) filesystem
 
 microemulator: bin/mnemojojo.jad bin/mnemojojo.jar filesystem
-	$(JAVA) -classpath $(MICROEMU)/microemulator.jar:$(MICROEMU)/lib/microemu-jsr-75.jar \
+	$(JAVA) -classpath $(MICROEMU)/microemulator.jar:$(MICROEMU)/lib/microemu-jsr-75.jar:$(MICROEMU)/devices/microemu-device-large.jar \
 	  org.microemu.app.Main \
 	  --impl org.microemu.cldc.file.FileSystem \
+	  --device org/microemu/device/large/device.xml \
 	  bin/mnemojojo.jad
 
 microemulatorconfig:
