@@ -1,5 +1,5 @@
 bin/
 sources
 version
-filesystem/
+filesystem
 \.svn/
