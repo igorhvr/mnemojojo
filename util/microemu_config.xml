@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+    <xsl:output
+	method="xml"
+	version="1.0"
+	encoding="UTF-8"
+	omit-xml-declaration="yes"
+	indent="yes"
+	/>
+
+    <xsl:param name="fsRoot"/>
+
+    <xsl:template match="config">
+	<config>
+	    <xsl:apply-templates/>
+	    <xsl:if test="not(extensions)">
+		<extensions>
+		    <xsl:call-template name="add_extension"/>
+		</extensions>
+	    </xsl:if>
+	</config>
+    </xsl:template>
+
+    <xsl:template match="extensions">
+	<extensions>
+	    <xsl:apply-templates/>
+	    <xsl:if
+		test="count(extension[className='org.microemu.cldc.file.FileSystem']) = 0">
+		<xsl:call-template name="add_extension"/>
+	    </xsl:if>
+	</extensions>
+    </xsl:template>
+
+    <xsl:template name="add_extension">
+	<extension>
+	    <className>org.microemu.cldc.file.FileSystem</className>
+	    <properties>
+		<property name="fsRoot" value="{$fsRoot}" />
+	    </properties>
+	</extension>
+    </xsl:template>
+
+    <xsl:template match="extension[className='org.microemu.cldc.file.FileSystem']">
+	<extension>
+	    <xsl:apply-templates mode="change_path"/>
+	</extension>
+    </xsl:template>
+
+    <xsl:template match="property[@name='fsRoot' or @NAME='fsRoot']" mode="change_path">
+	<property name="fsRoot" value="{$fsRoot}" />
+    </xsl:template>
+
+    <xsl:template match="properties" mode="change_path">
+	<properties>
+	    <xsl:apply-templates mode="change_path"/>
+	</properties>
+    </xsl:template>
+
+    <xsl:template match="*" mode="change_path">
+	<xsl:copy-of select="."/>
+    </xsl:template>
+
+    <xsl:template match="*">
+	<xsl:copy-of select="."/>
+    </xsl:template>
+
+</xsl:stylesheet>

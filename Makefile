@@ -1,31 +1,64 @@
 
+CLDCAPI=cldcapi11.jar
+MIDPAPI=midpapi20.jar
+
+# Java installation
+JAVA=/usr/bin/java
 JAVAC=/usr/bin/javac
 JAR=/usr/bin/jar
-WTK=/opt/WTK2.5.2
 
-CLDCAPI=$(WTK)/lib/cldcapi11.jar
-MIDPAPI=$(WTK)/lib/midpapi20.jar
-JSR75=$(WTK)/lib/jsr75.jar
+# Sun WTK installation
+WTK=/opt/WTK2.5.2
+WTKVERSION=2.5.2
+WTKDEVICE=DefaultColorPhone
+JAVAFILESYS=$(HOME)/j2mewtk/$(WTKVERSION)/appdb/$(WTKDEVICE)/filesystem
+
+# Microemulator installation
+MICROEMU=/opt/microemulator
+
+# Misc
+XSLTPROC=xsltproc
 
 mnemojojo: bin/mnemojojo.jar bin/mnemojojo.jad
-	# TODO: add zip file
 
-emulator: bin/mnemojojo.jar bin/mnemojojo.jad
+zip: bin/mnemojojo.jar bin/mnemojojo.jad version
+	zip bin/mnemojojo-`cat version`.zip \
+	  --junk-paths --quiet \
+	  bin/mnemojojo.jar \
+	  bin/mnemojojo.jad
+
+emulator: bin/mnemojojo.jar bin/mnemojojo.jad filesystem
 	$(WTK)/bin/emulator \
-	  -Xverbose:all \
-	  -Xdevice:DefaultColorPhone \
+	  -Xdevice:$(WTKDEVICE) \
+	  -Xdomain:maximum \
 	  -Xheapsize:500k \
 	  -Xdescriptor:bin/mnemojojo.jad
+
+filesystem:
+	ln -s $(JAVAFILESYS) filesystem
+
+microemulator: bin/mnemojojo.jad bin/mnemojojo.jar filesystem
+	$(JAVA) -classpath $(MICROEMU)/microemulator.jar:$(MICROEMU)/lib/microemu-jsr-75.jar \
+	  org.microemu.app.Main \
+	  --impl org.microemu.cldc.file.FileSystem \
+	  bin/mnemojojo.jad
+
+microemulatorconfig:
+	cp $(HOME)/.microemulator/config2.xml $(HOME)/.microemulator/config2.xml.bkp
+	$(XSLTPROC) --novalid --stringparam fsRoot "$(JAVAFILESYS)" \
+	    ./util/microemu_config.xml \
+	    $(HOME)/.microemulator/config2.xml.bkp \
+	    > $(HOME)/.microemulator/config2.xml
 
 compile: sources tmpclasses
 	$(JAVAC) \
 	  -source 1.4 -target 1.4 \
-	  -bootclasspath $(CLDCAPI):$(MIDPAPI):$(JSR75) \
+	  -bootclasspath $(WTK)/lib/$(CLDCAPI):$(WTK)/lib/$(MIDPAPI):$(WTK)/lib/jsr75.jar \
 	  -d tmpclasses @sources
 
 preverify: compile classes
 	$(WTK)/bin/preverify \
-	  -classpath $(CLDCAPI):$(MIDPAPI):$(JSR75) \
+	  -classpath $(WTK)/lib/$(CLDCAPI):$(WTK)/lib/$(MIDPAPI):$(WTK)/lib/jsr75.jar \
 	  -d classes tmpclasses
 
 bin/mnemojojo.jar: preverify bin/MANIFEST.MF bin
