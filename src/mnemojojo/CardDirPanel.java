@@ -15,8 +15,12 @@
 package mnemojojo;
 
 import java.lang.*;
+import java.util.Vector;
+import java.util.Enumeration;
+
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.Font;
+import javax.microedition.io.file.FileSystemRegistry;
 
 import gr.fire.core.FireScreen;
 import gr.fire.core.Component;
@@ -34,57 +38,125 @@ class CardDirPanel
 {
     public static final String carddirTitle = "Select card directory";
     protected static final String lookingText = "Searching for cards...";
-    protected static final String nocardsText = "No cards found!\nPlease export from Mnemosyne.";
+    protected static final String autoText = "Full automatic search";
+    protected static final String manualText = "Browse manually";
+
+    protected static final String cancelText = "Cancel";
+    protected static final String chooseText = "Ok";
+
     protected ProgressGauge progress;
+    protected Command cmdChoose;
+    protected Command cmdCancel;
 
-    protected Command cmdFatal;
+    public String cardpath = null;
+    protected String browsepath = null;
 
-    public String cardpath;
-
-    public CardDirPanel(FireScreen s, CommandListener li, Command cmd)
+    public CardDirPanel(FireScreen s, CommandListener li, Command cmdDone)
     {
-	super(carddirTitle, s, li, cmd);
+	super(carddirTitle, s, li, cmdDone);
 	progress = new ProgressGauge();
-	cmdFatal = new Command("invisible", Command.OK, 1);
+
+	cmdCancel = new Command(cancelText, Command.CANCEL, 4);
+
+	setCommandListener(this);	
+	setRightSoftKeyCommand(cmdCancel);
     }
 
-    public void makeList()
+    public void makeList(boolean full)
     {
-	int selected = -1;
+	String dbs[] = null;
 
 	progress.showGauge(lookingText);
-	String[] dbs = FindCardDir.checkStandard();
-	if (dbs == null) {
+	if (full) {
 	    dbs = FindCardDir.list();
+	} else {
+	    dbs = FindCardDir.checkStandard();
 	}
 	progress.hideGauge();
 
-	if (dbs == null || dbs.length == 0) {
-	    screen.showAlert(nocardsText, gr.fire.ui.Alert.TYPE_ERROR,
-			     gr.fire.ui.Alert.USER_SELECTED_OK, cmdFatal, this);
-	    return;
-	}
-
 	Container buttons = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 	
-	for (int i=0; i < dbs.length; ++i) {
-	    buttons.add(buttonRow(dbs[i]));
+	if (dbs != null) {
+	    for (int i=0; i < dbs.length; ++i) {
+		buttons.add(buttonRow(dbs[i]));
+	    }
 	}
+
+	if (!full) {
+	    buttons.add(buttonRow(autoText));
+	}
+	buttons.add(buttonRow(manualText));
 
 	set(buttons);
     }
 
-    public void commandAction(javax.microedition.lcdui.Command cmd,
-			      Component c)
+    protected void listDirs(String path)
     {
-	if (cmdFatal.equals(cmd)) {
-	    cardpath = null;
-	    exitPanel();
+	boolean isCardDir = false;
+	Enumeration e;
+
+	progress.showGauge(lookingText);
+	if (path == null) {
+	    browsepath = "file:///";
+	    e = FileSystemRegistry.listRoots();
+
+	} else {
+	    browsepath = path;
+	    Vector subdirs = new Vector();
+	    isCardDir = FindCardDir.isCardDir(path, subdirs);
+	    e = subdirs.elements();
+	}
+	progress.hideGauge();
+
+	Container buttons = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+
+	while (e.hasMoreElements()) {
+	    buttons.add(buttonRow((String)e.nextElement()));
 	}
 
+	set(buttons);
+
+	if (isCardDir) {
+	    cmdChoose = new Command(chooseText, Command.OK, 3);
+	    setLeftSoftKeyCommand(cmdChoose);
+	}
+    }
+
+    public void commandAction(javax.microedition.lcdui.Command cmd, Component c)
+    {
 	if (cmdButton.equals(cmd)) {
 	    InputComponent input = (InputComponent)c;
-	    cardpath = input.getValue();
+	    String label = input.getValue();
+
+	    // Note: root names should not equal autoText or manualText!
+
+	    if (browsepath != null) {
+		CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone);
+		cdp.cardpath = cardpath;
+		cdp.listDirs(browsepath + label);
+		screen.setCurrent(cdp);
+
+	    } else if (autoText.equals(label)) {
+		CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone);
+		cdp.cardpath = cardpath;
+		cdp.makeList(true);
+		screen.setCurrent(cdp);
+
+	    } else if (manualText.equals(label)) {
+		CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone);
+		cdp.cardpath = cardpath;
+		cdp.listDirs(null);
+		screen.setCurrent(cdp);
+
+	    } else {
+		cardpath = label;
+		exitPanel();
+	    }
+	} else if (cmdCancel.equals(cmd)) {
+	    exitPanel();
+
+	} else if (cmdChoose.equals(cmd)) {
+	    cardpath = browsepath;
 	    exitPanel();
 	}
     }

@@ -484,7 +484,8 @@ public class FireMIDlet
 					this, cmdOk, cmdExit);
 
 	// copy across the current configured values
-	if (config.cardpath != null && FindCardDir.isCardDir(config.cardpath)) {
+	if ((config.cardpath != null)
+	    && (FindCardDir.isCardDir(config.cardpath, null))) {
 	    aboutPanel.cardpath = config.cardpath;
 	} else {
 	    config.cardpath = null;

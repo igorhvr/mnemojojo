@@ -206,8 +206,9 @@ public class AboutPanel
 	    if (changeCardsText.equals(val)) {
 		CardDirPanel cdp =
 		    new CardDirPanel(screen, this, cmdChangeDir);
+		cdp.cardpath = cardpath;
 		screen.setCurrent(cdp);
-		cdp.makeList();
+		cdp.makeList(false);
 
 	    } else if (touchscreenText.equals(val)) {
 		touchScreen = !input.isChecked();
