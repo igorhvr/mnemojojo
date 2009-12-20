@@ -53,12 +53,18 @@ class SubPanel
     protected static int textFontHeight;
     protected static int buttonHeight;
 
+    protected static int buttonBgColor;
+    protected static int buttonFgColor;
+
+    protected static int radioWidth;
+    protected static int radioHeight;
+
     protected int screenWidth;
     protected final int controlGap = 10;
     protected final int edgeGap = 10;
 
-    protected int buttonBgColor;
-    protected int buttonFgColor;
+    // for example: 640x480=307200, 480x800=384000
+    protected static final long bigScreenPixels = 300000;
 
     protected Command cmdLeft;
     protected Command cmdRight;
@@ -75,28 +81,46 @@ class SubPanel
 
 	screenWidth = screen.getWidth() - edgeGap;
 
-	// setup fonts
-	sectionFont = Font.getFont(Font.FACE_SYSTEM,
-				   Font.STYLE_BOLD,
-				   Font.SIZE_LARGE);
-	sectionFontHeight = sectionFont.getHeight();
+	if (sectionFont == null) {
+	    long numPixels = screen.getHeight() * screen.getWidth();
+	    int standardFontSize;
 
-	titleFont = Font.getFont(Font.FACE_SYSTEM,
-				 Font.STYLE_BOLD,
-				 Font.SIZE_SMALL);
-	titleFontHeight = titleFont.getHeight();
+	    if (numPixels < bigScreenPixels) {
+		standardFontSize = Font.SIZE_SMALL;
+		radioWidth = InputComponent.RADIO_WIDTH;
+		radioHeight = InputComponent.RADIO_HEIGHT;
+	    } else {
+		standardFontSize = Font.SIZE_LARGE;
+		radioWidth = InputComponent.RADIO_WIDTH * 3;
+		radioHeight = InputComponent.RADIO_HEIGHT * 3;
+	    }
 
-	textFont = Font.getFont(Font.FACE_SYSTEM,
-				Font.STYLE_PLAIN,
-				Font.SIZE_SMALL);
-	textFontHeight = textFont.getHeight();
+	    // setup fonts
+	    sectionFont = Font.getFont(Font.FACE_SYSTEM,
+				       Font.STYLE_BOLD,
+				       Font.SIZE_LARGE);
+	    sectionFontHeight = sectionFont.getHeight();
 
-	labelFont = titleFont;
-	labelFontHeight = titleFontHeight;
+	    titleFont = Font.getFont(Font.FACE_SYSTEM,
+				     Font.STYLE_BOLD,
+				     standardFontSize);
+	    titleFontHeight = titleFont.getHeight();
 
-	buttonHeight = labelFontHeight * 2;
-	buttonBgColor = FireScreen.getTheme().getIntProperty("button.bg.color");
-	buttonFgColor = FireScreen.getTheme().getIntProperty("button.fg.color");
+	    textFont = Font.getFont(Font.FACE_SYSTEM,
+				    Font.STYLE_PLAIN,
+				    standardFontSize);
+	    textFontHeight = textFont.getHeight();
+
+	    labelFont = titleFont;
+	    labelFontHeight = titleFontHeight;
+
+	    buttonHeight = labelFontHeight * 2;
+	    if (numPixels >= bigScreenPixels) {
+		buttonHeight = labelFontHeight * 3;
+	    }
+	    buttonBgColor = FireScreen.getTheme().getIntProperty("button.bg.color");
+	    buttonFgColor = FireScreen.getTheme().getIntProperty("button.fg.color");
+	}
 
 	cmdButton = new Command("invisible", Command.OK, 1);
     }
@@ -160,6 +184,8 @@ class SubPanel
     {
 	Container row = new Container(new BoxLayout(BoxLayout.X_AXIS));
 
+	int inputHeight = Math.max(labelFontHeight, radioHeight + 2);
+
 	InputComponent checkbox = new InputComponent(InputComponent.CHECKBOX);
 	checkbox.setValue(text);
 	checkbox.setCommandListener(this);
@@ -167,21 +193,23 @@ class SubPanel
 	checkbox.setLayout(FireScreen.CENTER | FireScreen.VCENTER);
 	checkbox.setBackgroundColor(buttonBgColor);
 	checkbox.setForegroundColor(buttonFgColor);
-	checkbox.setPrefSize(InputComponent.RADIO_WIDTH,
-			     InputComponent.RADIO_HEIGHT);
+	checkbox.setPrefSize(radioWidth, radioHeight);
 	checkbox.setLeftSoftKeyCommand(cmdLeft);
 	checkbox.setRightSoftKeyCommand(cmdRight);
 	checkbox.validate();
 
-	TextComponent title = new TextComponent("  " + text,
-				screenWidth - InputComponent.RADIO_WIDTH);
+	TextComponent blank = new TextComponent(" ", 8);
+
+	TextComponent title = new TextComponent(text,
+				screenWidth - radioWidth - 8);
 	title.setFont(labelFont);
 	title.setLayout(FireScreen.LEFT | FireScreen.VCENTER);
 	title.validate();
 
 	row.add(checkbox);
+	row.add(blank);
 	row.add(title);
-	row.setPrefSize(screenWidth, labelFontHeight + controlGap);
+	row.setPrefSize(screenWidth, inputHeight + controlGap);
 	row.validate();
 
 	cnt.add(row);
@@ -256,8 +284,7 @@ class SubPanel
     {
 	Container row = new Container(new BoxLayout(BoxLayout.X_AXIS));
 
-	int inputHeight = Math.max(labelFontHeight,
-				   InputComponent.RADIO_HEIGHT);
+	int inputHeight = Math.max(labelFontHeight, radioHeight + 2);
 
 	InputComponent radio = new InputComponent(InputComponent.RADIO);
 	radio.setValue(text);
@@ -266,14 +293,13 @@ class SubPanel
 	radio.setLayout(FireScreen.CENTER | FireScreen.VCENTER);
 	radio.setBackgroundColor(buttonBgColor);
 	radio.setForegroundColor(buttonFgColor);
-	radio.setPrefSize(InputComponent.RADIO_WIDTH,
-			  InputComponent.RADIO_HEIGHT);
+	radio.setPrefSize(radioWidth, radioHeight);
 	radio.setLeftSoftKeyCommand(cmdLeft);
 	radio.setRightSoftKeyCommand(cmdRight);
 	radio.validate();
 
 	TextComponent title = new TextComponent("  " + text,
-				width - InputComponent.RADIO_WIDTH);
+				width - radioWidth);
 	title.setFont(labelFont);
 	title.setLayout(FireScreen.LEFT | FireScreen.VCENTER);
 	title.validate();

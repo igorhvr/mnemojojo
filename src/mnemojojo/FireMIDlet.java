@@ -244,9 +244,23 @@ public class FireMIDlet
     {
 	Container pad = new Container(new GridLayout(1, symbols.length));
 	InputComponent button;
-	Font buttonFont = Font.getFont(Font.FACE_SYSTEM,
-				       Font.STYLE_BOLD,
-				       Font.SIZE_MEDIUM);
+
+	boolean isBigScreen = (screen.getHeight() * screen.getWidth())
+				> SubPanel.bigScreenPixels;
+
+	Font buttonFont;
+	int buttonHeight;
+	if (isBigScreen) {
+	    buttonFont = Font.getFont(Font.FACE_SYSTEM,
+				      Font.STYLE_BOLD,
+				      Font.SIZE_LARGE);
+	    buttonHeight = buttonFont.getHeight() * 3;
+	} else {
+	    buttonFont = Font.getFont(Font.FACE_SYSTEM,
+				      Font.STYLE_BOLD,
+				      Font.SIZE_MEDIUM);
+	    buttonHeight = buttonFont.getHeight() * 2;
+	}
 	
 	for(int i = 0; i<symbols.length; ++i) {
 	    button = new InputComponent(InputComponent.BUTTON);
@@ -269,7 +283,7 @@ public class FireMIDlet
 	padPane.setShowBackground(true);
 	padPane.setBackgroundColor(
 	    FireScreen.getTheme().getIntProperty("titlebar.bg.color"));
-	padPane.setPrefSize(screen.getWidth(), buttonFont.getHeight() * 2);
+	padPane.setPrefSize(screen.getWidth(), buttonHeight);
 
 	return padPane;
     }

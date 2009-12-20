@@ -164,7 +164,7 @@ public class AboutPanel
 	row.add(blank2);
 	largeRadio = radioRow(largeText, radioWidth, row);
 
-	row.setPrefSize(screenWidth, labelFontHeight * 3 + controlGap);
+	row.setPrefSize(screenWidth, largeRadio.getHeight() * 3 + controlGap);
 
 	return row;
     }
