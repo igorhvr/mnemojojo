@@ -35,7 +35,6 @@ import mnemogogo.mobile.hexcsv.Card;
 import mnemogogo.mobile.hexcsv.HexCsv;
 import mnemogogo.mobile.hexcsv.FindCardDir;
 import mnemogogo.mobile.hexcsv.Progress;
-import mnemogogo.mobile.hexcsv.Debug;	// XXX
 
 import gr.fire.browser.Browser;
 import gr.fire.browser.util.Page;
@@ -102,16 +101,8 @@ public class FireMIDlet
 
     Runtime rt = Runtime.getRuntime();
 
-    public void showMemory(String msg)
-    {
-	System.gc();
-	Debug.logln(msg + ": freeMemory=" + Long.toString(rt.freeMemory())
-			    + " / " +  Long.toString(rt.totalMemory()));
-    }
-
     public FireMIDlet()
     {
-	if (debug) Debug.logln("FireMIDlet()"); // XXX
 	//try { // XXX
 	Log.showDebug = debug;
 
@@ -283,7 +274,7 @@ public class FireMIDlet
 	padPane.setShowBackground(true);
 	padPane.setBackgroundColor(
 	    FireScreen.getTheme().getIntProperty("titlebar.bg.color"));
-	padPane.setPrefSize(screen.getWidth(), buttonHeight);
+	padPane.setPrefSize(-1, buttonHeight);
 
 	return padPane;
     }
@@ -349,7 +340,6 @@ public class FireMIDlet
 	outer.setRightSoftKeyCommand(cmdRight);
 
 	outer.scrollPanel = htmlPanel;
-
 	return outer;
     }
 
