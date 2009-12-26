@@ -259,10 +259,12 @@ public class AboutPanel
 
 	} else if (cmdChangeDir.equals(cmd)) {
 	    CardDirPanel cdp = (CardDirPanel)c;
-	    cardpath = cdp.cardpath;
+	    if (cardpath == null || !cardpath.equals(cdp.cardpath)) {
+		cardpath = cdp.cardpath;
+		dirty = true;
+	    }
 	    screen.setCurrent(this);
 	    repaintControls();
-	    dirty = true;
 
 	} else if (cmdLeft.equals(cmd) || cmdRight.equals(cmd)) {
 	    cardsToLoad = Integer.parseInt(cardstoloadNum.getValue());
