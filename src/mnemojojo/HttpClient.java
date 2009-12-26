@@ -31,7 +31,25 @@ class HttpClient
 
     public void setUrlPrefix(String prefix)
     {
-	this.prefix = prefix;
+	if (prefix.indexOf(' ') == -1) {
+	    this.prefix = prefix;
+
+	} else {
+	    StringBuffer strb = new StringBuffer();
+	    char c;
+
+	    for (int i=0; i < prefix.length(); ++i) {
+		c = prefix.charAt(i);
+
+		if (c == ' ') {
+		    strb.append("%20");
+		} else {
+		    strb.append(c);
+		}
+	    }
+
+	    this.prefix = strb.toString();
+	}
     }
 
     public Request requestResource(String url,
