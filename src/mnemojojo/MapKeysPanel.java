@@ -46,9 +46,10 @@ class MapKeysPanel
     public int numKeys;
     public int keyCode[];
 
-    public MapKeysPanel(FireScreen s, CommandListener li, Command cmd)
+    public MapKeysPanel(FireScreen s, CommandListener li, Command cmd,
+		        Configuration config)
     {
-	super(configureKeysTitle, s, li, cmd);
+	super(configureKeysTitle, s, li, cmd, config);
 	
 	numKeys = keyQuery.length;
 	keyCode = new int[numKeys];

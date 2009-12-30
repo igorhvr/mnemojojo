@@ -51,9 +51,10 @@ class CardDirPanel
     public String cardpath = null;
     protected String browsepath = null;
 
-    public CardDirPanel(FireScreen s, CommandListener li, Command cmdDone)
+    public CardDirPanel(FireScreen s, CommandListener li, Command cmdDone,
+			Configuration config)
     {
-	super(carddirTitle, s, li, cmdDone);
+	super(carddirTitle, s, li, cmdDone, config);
 	progress = new ProgressGauge();
 
 	cmdCancel = new Command(cancelText, Command.CANCEL, 4);
@@ -131,19 +132,22 @@ class CardDirPanel
 	    // Note: root names should not equal autoText or manualText!
 
 	    if (browsepath != null) {
-		CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone);
+		CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone,
+						    config);
 		cdp.cardpath = cardpath;
 		cdp.listDirs(browsepath + label);
 		screen.setCurrent(cdp);
 
 	    } else if (autoText.equals(label)) {
-		CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone);
+		CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone,
+						    config);
 		cdp.cardpath = cardpath;
 		cdp.makeList(true);
 		screen.setCurrent(cdp);
 
 	    } else if (manualText.equals(label)) {
-		CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone);
+		CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone,
+						    config);
 		cdp.cardpath = cardpath;
 		cdp.listDirs(null);
 		screen.setCurrent(cdp);

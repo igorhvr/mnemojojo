@@ -63,36 +63,35 @@ class SubPanel
     protected final int controlGap = 10;
     protected final int edgeGap = 10;
 
-    // for example: 640x480=307200, 480x800=384000
-    protected static final long bigScreenPixels = 300000;
-
     protected Command cmdLeft;
     protected Command cmdRight;
 
+    protected Configuration config;
+
     public SubPanel(String title, FireScreen s, gr.fire.core.CommandListener li,
-		    Command cmd)
+		    Command cmd, Configuration config)
     {
 	super(null, Panel.VERTICAL_SCROLLBAR, true);
 	
 	screen = s;
 	listener = li;
 	cmdDone = cmd;
+	this.config = config;
 	setLabel(title);
 
 	screenWidth = screen.getWidth() - edgeGap;
 
 	if (sectionFont == null) {
-	    long numPixels = screen.getHeight() * screen.getWidth();
 	    int standardFontSize;
 
-	    if (numPixels < bigScreenPixels) {
-		standardFontSize = Font.SIZE_SMALL;
-		radioWidth = InputComponent.RADIO_WIDTH;
-		radioHeight = InputComponent.RADIO_HEIGHT;
-	    } else {
+	    if (config.isBigScreen) {
 		standardFontSize = Font.SIZE_LARGE;
 		radioWidth = InputComponent.RADIO_WIDTH * 3;
 		radioHeight = InputComponent.RADIO_HEIGHT * 3;
+	    } else {
+		standardFontSize = Font.SIZE_SMALL;
+		radioWidth = InputComponent.RADIO_WIDTH;
+		radioHeight = InputComponent.RADIO_HEIGHT;
 	    }
 
 	    // setup fonts
@@ -115,7 +114,7 @@ class SubPanel
 	    labelFontHeight = titleFontHeight;
 
 	    buttonHeight = labelFontHeight * 2;
-	    if (numPixels >= bigScreenPixels) {
+	    if (config.isBigScreen) {
 		buttonHeight = labelFontHeight * 3;
 	    }
 	    buttonBgColor = FireScreen.getTheme().getIntProperty("button.bg.color");
@@ -239,6 +238,7 @@ class SubPanel
 	numbox.setBackgroundColor(buttonBgColor);
 	numbox.setForegroundColor(buttonFgColor);
 	numbox.setPrefSize(numboxWidth, textFontHeight * 2);
+	numbox.setFont(textFont);
 	numbox.addTextConstraints(TextField.NUMERIC);
 	numbox.setLeftSoftKeyCommand(cmdLeft);
 	numbox.setRightSoftKeyCommand(cmdRight);

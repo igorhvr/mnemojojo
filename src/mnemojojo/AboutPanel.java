@@ -82,9 +82,10 @@ public class AboutPanel
 
     public AboutPanel(FireScreen screen, String versionInfo,
 		      gr.fire.core.CommandListener li,
-		      Command cmdLeft, Command cmdRight)
+		      Command cmdLeft, Command cmdRight,
+		      Configuration config)
     {
-	super(versionInfo, screen, li, null);
+	super(versionInfo, screen, li, null, config);
 
 	this.cmdLeft = cmdLeft;
 	this.cmdRight = cmdRight;
@@ -205,7 +206,7 @@ public class AboutPanel
 
 	    if (changeCardsText.equals(val)) {
 		CardDirPanel cdp =
-		    new CardDirPanel(screen, this, cmdChangeDir);
+		    new CardDirPanel(screen, this, cmdChangeDir, config);
 		cdp.cardpath = cardpath;
 		screen.setCurrent(cdp);
 		cdp.makeList(false);
@@ -223,11 +224,13 @@ public class AboutPanel
 
 	    } else if (leftrightText.equals(val)) {
 		MapCommandKeysPanel mkp =
-		    new MapCommandKeysPanel(screen, this, cmdLeftRightDone);
+		    new MapCommandKeysPanel(screen, this, cmdLeftRightDone,
+					    config);
 		screen.setCurrent(mkp);
 
 	    } else if (gradingkeysText.equals(val)) {
-		MapKeysPanel mkp = new MapKeysPanel(screen, this, cmdKeysDone);
+		MapKeysPanel mkp = new MapKeysPanel(screen, this, cmdKeysDone,
+						    config);
 		screen.setCurrent(mkp);
 
 	    } else if (smallText.equals(val)) {

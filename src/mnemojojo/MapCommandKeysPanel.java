@@ -33,9 +33,10 @@ class MapCommandKeysPanel
 
     protected Command pressCmd = new Command(pressText, Command.OK, 1);
 
-    public MapCommandKeysPanel(FireScreen s, CommandListener li, Command cmd)
+    public MapCommandKeysPanel(FireScreen s, CommandListener li, Command cmd,
+			       Configuration config)
     {
-	super(configureKeysTitle, s, li, cmd);
+	super(configureKeysTitle, s, li, cmd, config);
 	
 	Container cnt = new Container();
 	cnt.add(new TextComponent(pressInfoText));

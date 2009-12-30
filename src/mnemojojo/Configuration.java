@@ -38,7 +38,12 @@ public class Configuration
     public int fontSize;
     public int cardsToLoad;
 
+    public boolean isBigScreen = false;
+
     private static final String writingConfigText = "Writing configuration...";
+
+    // for example: 640x480=307200, 480x800=384000
+    private static final long bigScreenPixels = 300000;
 
     protected final static int defaultGradeKey[] = {
 	    FireScreen.KEY_NUM0,
@@ -49,12 +54,20 @@ public class Configuration
 	    FireScreen.KEY_NUM5
 	};
 
-    public Configuration() {
+    public Configuration()
+    {
 	gradeKey = new int[defaultGradeKey.length];
 	load();
     }
 
-    private String readRecord(String name) {
+    public void setScreen(FireScreen screen)
+    {
+	isBigScreen = (screen.getHeight() * screen.getWidth())
+			>= bigScreenPixels;
+    }
+
+    private String readRecord(String name)
+    {
 	String r;
 
 	try {
@@ -68,7 +81,8 @@ public class Configuration
 	return r;
     }
 
-    private void writeRecord(String name, String value) {
+    private void writeRecord(String name, String value)
+    {
 	if (value == null) {
 	    return;
 	}
@@ -86,7 +100,8 @@ public class Configuration
 	} catch (RecordStoreException e) { }
     }
 
-    public void load() {
+    public void load()
+    {
 	cardpath = readRecord("cardpath");
 
 	String v = readRecord("cards_mtime");

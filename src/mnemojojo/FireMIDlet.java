@@ -110,9 +110,15 @@ public class FireMIDlet
 
 	// initialize a browser instance
 	screen = FireScreen.getScreen(display);
+	config.setScreen(screen);
+
 	screen.setFullScreenMode(true);
 	try {
-	    screen.setTheme(new FireTheme("file://theme.properties"));
+	    if (config.isBigScreen) {
+		screen.setTheme(new FireTheme("file://hires.properties"));
+	    } else {
+		screen.setTheme(new FireTheme("file://normal.properties"));
+	    }
 	} catch (Exception e) {}
 
 	progressGauge = new ProgressGauge();
@@ -233,25 +239,31 @@ public class FireMIDlet
     private Panel makeButtonRow(String symbols[],
 				Command cmdLeft, Command cmdRight)
     {
-	Container pad = new Container(new GridLayout(1, symbols.length));
 	InputComponent button;
-
-	boolean isBigScreen = (screen.getHeight() * screen.getWidth())
-				> SubPanel.bigScreenPixels;
 
 	Font buttonFont;
 	int buttonHeight;
-	if (isBigScreen) {
+	int rows = 1;
+	int cols = symbols.length;
+
+	if (config.isBigScreen) {
 	    buttonFont = Font.getFont(Font.FACE_SYSTEM,
 				      Font.STYLE_BOLD,
 				      Font.SIZE_LARGE);
-	    buttonHeight = buttonFont.getHeight() * 3;
+	    buttonHeight = buttonFont.getHeight() * 4;
+	    if (symbols.length >= 6) {
+		rows = 2;
+		cols = symbols.length / 2;
+		buttonHeight *= 2;
+	    }
 	} else {
 	    buttonFont = Font.getFont(Font.FACE_SYSTEM,
 				      Font.STYLE_BOLD,
 				      Font.SIZE_MEDIUM);
 	    buttonHeight = buttonFont.getHeight() * 2;
 	}
+
+	Container pad = new Container(new GridLayout(rows, cols));
 	
 	for(int i = 0; i<symbols.length; ++i) {
 	    button = new InputComponent(InputComponent.BUTTON);
@@ -485,7 +497,7 @@ public class FireMIDlet
     void showAbout()
     {
 	AboutPanel aboutPanel = new AboutPanel(screen, versionInfo,
-					this, cmdOk, cmdExit);
+					this, cmdOk, cmdExit, config);
 
 	// copy across the current configured values
 	if ((config.cardpath != null)
