@@ -20,6 +20,9 @@ MICROEMU=/opt/microemulator
 XSLTPROC=xsltproc
 
 mnemojojo: bin/mnemojojo.jar bin/mnemojojo.jad
+	@echo --Todo items remaining in source:
+	-@grep XXX src/mnemojojo/*.java
+	-@grep TODO src/mnemojojo/*.java
 
 zip: bin/mnemojojo.jar bin/mnemojojo.jad version
 	zip bin/mnemojojo-`cat version`.zip \
