@@ -81,8 +81,8 @@ abstract class Core
     protected static final String cardsdirText = "Cards: ";
     protected static final String updateOverdueText
 	    = "An export from Mnemosyne is overdue!";
-    protected static final String updateTomorrowText
-	    = "An export from Mnemosyne is due before tomorrow.";
+    protected static final String updateTodayText
+	    = "An export from Mnemosyne is due today.";
 
     protected static final String freeMemoryText = "Free bytes: ";
     protected static final String totalMemoryText = "Total bytes: ";

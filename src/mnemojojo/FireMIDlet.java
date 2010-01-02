@@ -371,11 +371,11 @@ public class FireMIDlet
 	byte icon;
 	String msg;
 
-	if (days_left <= 0) {
+	if (days_left < 0) {
 	    msg = updateOverdueText;
 	    icon = gr.fire.ui.Alert.TYPE_WARNING;
-	} else if (days_left == 1) {
-	    msg = updateTomorrowText;
+	} else if (days_left == 0) {
+	    msg = updateTodayText;
 	    icon = gr.fire.ui.Alert.TYPE_INFO;
 	} else {
 	    return;
@@ -457,10 +457,10 @@ public class FireMIDlet
 	int daysLeft = carddb.daysLeft();
 	StringBuffer msg = new StringBuffer("<body><p>");
 
-	if (daysLeft <= 0) {
+	if (daysLeft < 0) {
 	    msg.append(updateOverdueText);
-	} else if (daysLeft == 1) {
-	    msg.append(updateTomorrowText);
+	} else if (daysLeft == 0) {
+	    msg.append(updateTodayText);
 	} else {
 	    futureScheduleText(msg);
 	}
