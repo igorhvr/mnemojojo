@@ -79,7 +79,7 @@ class SubPanel
 	this.config = config;
 	setLabel(title);
 
-	screenWidth = screen.getWidth() - edgeGap;
+	screenWidth = ((screen.getWidth() - edgeGap) * 8 / 10); // 80%
 
 	if (sectionFont == null) {
 	    int standardFontSize;

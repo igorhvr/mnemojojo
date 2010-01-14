@@ -52,6 +52,7 @@ public class AboutPanel
     protected InputComponent mediumRadio;
     protected InputComponent largeRadio;
     protected InputComponent touchscreenCheck;
+    protected InputComponent centerTextCheck;
     protected InputComponent cardstoloadNum;
     protected boolean cardstoloadSet = false;
 
@@ -70,12 +71,14 @@ public class AboutPanel
     protected final static String mediumText= "medium";
     protected final static String largeText= "large";
     protected final static String cardsToLoadText= "Cards to load ahead:";
+    protected final static String centerTextText= "Center card text";
     protected final static String nocardpathText
 				= "(no card directory currently set)";
 
     public boolean dirty = false;
     public int fontSize = Font.SIZE_SMALL;
     public boolean touchScreen = true;
+    public boolean centerText = false;
     public int keys[];
     public String cardpath;
     public int cardsToLoad;
@@ -137,6 +140,7 @@ public class AboutPanel
 	aboutCnt.add(buttonRow(gradingkeysText));
 
 	aboutCnt.add(fontsizeRow());
+	centerTextCheck = checkboxRow(centerTextText, aboutCnt);
 
 	cardstoloadNum = numberRow(cardsToLoadText, aboutCnt);
 
@@ -174,6 +178,8 @@ public class AboutPanel
     {
 	touchscreenCheck.setChecked(touchScreen);
 	touchscreenCheck.repaint();
+	centerTextCheck.setChecked(centerText);
+	centerTextCheck.repaint();
 
 	if (!cardstoloadSet) {
 	    cardstoloadNum.setValue(Integer.toString(cardsToLoad));
@@ -213,6 +219,10 @@ public class AboutPanel
 
 	    } else if (touchscreenText.equals(val)) {
 		touchScreen = !input.isChecked();
+		dirty = true;
+
+	    } else if (centerTextText.equals(val)) {
+		centerText = !input.isChecked();
 		dirty = true;
 
 	    } else if (cardstoloadNum.equals(input)) {

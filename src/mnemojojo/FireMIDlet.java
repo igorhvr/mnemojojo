@@ -210,10 +210,14 @@ public class FireMIDlet
     StringBuffer makeCardHtml(boolean includeAnswer)
     {
 	StringBuffer html = new StringBuffer(
-	    "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<body><p>");
+	    "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<body>");
 
 	String question = curCard.getQuestion();
 	String answer = curCard.getAnswer();
+
+	if (config.centerText) {
+	    html.append("<center>");
+	}
 
 	if (question == null || answer == null) {
 	    html.append(nocardloadedText);
@@ -230,7 +234,11 @@ public class FireMIDlet
 	    html.append(question);
 	}
 
-	html.append("</p></body>");
+	if (config.centerText) {
+	    html.append("</center>");
+	}
+
+	html.append("</body>");
 
 	return html;
     }
@@ -510,6 +518,7 @@ public class FireMIDlet
 	aboutPanel.fontSize = config.fontSize;
 	aboutPanel.cardsToLoad = config.cardsToLoad;
 	aboutPanel.touchScreen = config.showButtons;
+	aboutPanel.centerText = config.centerText;
 	int i = 0;
 	while (i < 6) {
 	    aboutPanel.keys[i] = config.gradeKey[i];
@@ -628,6 +637,7 @@ public class FireMIDlet
 		    config.cardsToLoad = aboutPanel.cardsToLoad;
 		}
 		config.showButtons = aboutPanel.touchScreen;
+		config.centerText = aboutPanel.centerText;
 		int i = 0;
 		while (i < 6) {
 		    config.gradeKey[i] = aboutPanel.keys[i];

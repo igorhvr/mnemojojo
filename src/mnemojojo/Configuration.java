@@ -37,6 +37,7 @@ public class Configuration
     public int statKey;
     public int fontSize;
     public int cardsToLoad;
+    public boolean centerText;
 
     public boolean isBigScreen = false;
 
@@ -168,11 +169,18 @@ public class Configuration
 	} else {
 	    cardsToLoad = Integer.parseInt(v);
 	}
+
+	v = readRecord("center_text");
+	if (v == null) {
+	    centerText = false;
+	} else {
+	    centerText = v.equals("true");
+	}
     }
 
     public void save(Progress progress)
     {
-	progress.startOperation(9 + gradeKey.length, writingConfigText);
+	progress.startOperation(10 + gradeKey.length, writingConfigText);
 
 	writeRecord("cardpath", cardpath);
 	progress.updateOperation(1);
@@ -206,6 +214,9 @@ public class Configuration
 	progress.updateOperation(1);
 
 	writeRecord("cards_to_load", Integer.toString(cardsToLoad));
+	progress.updateOperation(1);
+
+	writeRecord("center_text", centerText?"true":"false");
 	progress.updateOperation(1);
 
 	progress.stopOperation();
