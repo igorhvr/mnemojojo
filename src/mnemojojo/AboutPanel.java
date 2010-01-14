@@ -108,7 +108,7 @@ public class AboutPanel
 	    Image img = Image.createImage("/mnemosyne.png");
 	    ImageComponent imgCmp = new ImageComponent(img, "");
 	    imgCmp.setLayout(FireScreen.VCENTER | FireScreen.CENTER);
-	    imgCmp.setPrefSize(screen.getWidth(), img.getHeight() + 15);
+	    imgCmp.setPrefSize(img.getWidth(), img.getHeight() + 15);
 	    imgCmp.validate();
 	    aboutCnt.add(imgCmp);
 	} catch (IOException e) { }
