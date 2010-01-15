@@ -64,7 +64,7 @@ public class AboutPanel
     protected final static String configTitleText = "Configuration Options";
     protected final static String changeCardsText= "Change card directory";
     protected final static String touchscreenText= "Show touchscreen buttons";
-    protected final static String leftrightText="Configure left and right keys";
+    protected final static String leftrightText="Configure command keys";
     protected final static String gradingkeysText= "Configure grading keys";
     protected final static String cardfontText= "Card font size:";
     protected final static String smallText= "small";

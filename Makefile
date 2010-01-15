@@ -68,7 +68,7 @@ preverify: compile classes
 bin/mnemojojo.jar: preverify bin/MANIFEST.MF bin
 	$(JAR) cfm bin/mnemojojo.jar bin/MANIFEST.MF -C classes . -C res .
 
-bin/mnemojojo.jad: bin/mnemojojo.jar bin
+bin/mnemojojo.jad: bin/mnemojojo.jar version bin
 	@echo "MIDlet-1: Mnemojojo, mnemosyne.png, mnemojojo.FireMIDlet" > bin/mnemojojo.jad
 	@echo "MIDlet-Icon: mnemosyne.png" >> bin/mnemojojo.jad
 	@echo "MIDlet-Jar-Size: `ls -l bin/mnemojojo.jar | cut -d ' ' -f 5`" >> bin/mnemojojo.jad
