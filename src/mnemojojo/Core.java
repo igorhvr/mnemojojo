@@ -60,13 +60,13 @@ abstract class Core
     protected static final String skipCardText = "Skip";
     protected static final String closeText = "Close";
     protected static final String doneText
-	    = "There are no new cards to review.";
+            = "There are no new cards to review.";
     protected static final String nocardloadedText
-	    = "Unexpected error: card not loaded.";
+            = "Unexpected error: card not loaded.";
     protected static final String selectCarddir
-	    = "A card directory must be set before starting.";
+            = "A card directory must be set before starting.";
     protected static final String notEnoughMemoryToLoadText
-	    = "Not enough memory to load cards.";
+            = "Not enough memory to load cards.";
 
     protected static final String statisticsText = "Statistics";
     protected static final String currentCardText = "Current Card";
@@ -74,144 +74,144 @@ abstract class Core
     protected static final String repetitionsText = "Repetitions";
     protected static final String lapsesText = "Lapses";
     protected static final String daysSinceLastText
-	    = "Days since last repetition";
+            = "Days since last repetition";
     protected static final String daysUntilNextText
-	    = "Days until next repetition";
+            = "Days until next repetition";
 
     protected static final String cardsdirText = "Cards: ";
     protected static final String updateOverdueText
-	    = "An export from Mnemosyne is overdue!";
+            = "An export from Mnemosyne is overdue!";
     protected static final String updateTodayText
-	    = "An export from Mnemosyne is due today.";
+            = "An export from Mnemosyne is due today.";
 
     protected static final String freeMemoryText = "Free bytes: ";
     protected static final String totalMemoryText = "Total bytes: ";
 
     protected static final String forDaysText
-	    = "Scheduled cards for the next days";
+            = "Scheduled cards for the next days";
     protected static final String inText = "In";
     protected static final String daysText = "day(s)";
 
     protected String[] aboutLines = {
-	    versionInfo,
-	    "\n",
-	    "(c) Timothy Bourke\n\n",
-	    "SM-2 Implementation: Peter Bienstman\n",
-	    "SM-2 Algorithm: Piotr Wozniak\n"
-	};
+            versionInfo,
+            "\n",
+            "(c) Timothy Bourke\n\n",
+            "SM-2 Implementation: Peter Bienstman\n",
+            "SM-2 Algorithm: Piotr Wozniak\n"
+        };
 
     public Core()
     {
-	gradesText = new String[6];
-	for (int i=0; i < 6; ++i) {
-	    gradesText[i] = gradeText + " " + Integer.toString(i);
-	}
+        gradesText = new String[6];
+        for (int i=0; i < 6; ++i) {
+            gradesText[i] = gradeText + " " + Integer.toString(i);
+        }
     }
 
     abstract public void startApp() throws MIDletStateChangeException;
 
     public void pauseApp()
     {
-	pauseThinking();
+        pauseThinking();
     }
 
     public void destroyApp(boolean unconditional)
     {
-	if (carddb != null) {
-	    carddb.close();
-	}
+        if (carddb != null) {
+            carddb.close();
+        }
     }
 
     protected boolean doGrade(int grade)
     {
-	if (curCard == null) {
-	    return false;
-	}
+        if (curCard == null) {
+            return false;
+        }
 
-	try {
-	    curCard.gradeCard(carddb.days_since_start,
-		grade, thinking_msecs, carddb.logfile);
-	    carddb.updateFutureSchedule(curCard);
-	    return true;
+        try {
+            curCard.gradeCard(carddb.days_since_start,
+                grade, thinking_msecs, carddb.logfile);
+            carddb.updateFutureSchedule(curCard);
+            return true;
 
-	} catch (IOException e) {
-	    showFatal(e.toString(), false);
-	    return false;
-	}
+        } catch (IOException e) {
+            showFatal(e.toString(), false);
+            return false;
+        }
     }
 
     protected void loadCards()
     {
-	if (carddb != null) {
-	    carddb.close();
-	}
+        if (carddb != null) {
+            carddb.close();
+        }
 
-	try {
-	    carddb = new HexCsv(config.cardpath, progressHandler);
-	    carddb.cards_to_load = config.cardsToLoad;
-	    setCardDir(config.cardpath);
-	} catch (Exception e) {
-	    showFatal(e.toString(), true);
-	} catch (OutOfMemoryError e) {
-	    carddb = null;
-	    showFatal(notEnoughMemoryToLoadText, true);
-	}
+        try {
+            carddb = new HexCsv(config.cardpath, progressHandler);
+            carddb.cards_to_load = config.cardsToLoad;
+            setCardDir(config.cardpath);
+        } catch (Exception e) {
+            showFatal(e.toString(), true);
+        } catch (OutOfMemoryError e) {
+            carddb = null;
+            showFatal(notEnoughMemoryToLoadText, true);
+        }
     }
 
     protected void saveCards()
     {
-	if (carddb != null) {
-	    try {
-		carddb.writeCards(new StringBuffer(config.cardpath),
-				  progressHandler);
-	    } catch (IOException e) {
-		showFatal(e.toString(), true);
-	    }
+        if (carddb != null) {
+            try {
+                carddb.writeCards(new StringBuffer(config.cardpath),
+                                  progressHandler);
+            } catch (IOException e) {
+                showFatal(e.toString(), true);
+            }
 
-	    return;
-	}
+            return;
+        }
     }
 
     protected boolean nextQuestion()
     {
-	curCard = carddb.getCard();
+        curCard = carddb.getCard();
 
-	try {
-	    setCard(curCard, carddb.numScheduled());
-	    if (curCard != null) {
-		startThinking();
-		return true;
-	    }
-	} catch (Exception e) {
-	    showFatal(e.toString(), false);
-	}
+        try {
+            setCard(curCard, carddb.numScheduled());
+            if (curCard != null) {
+                startThinking();
+                return true;
+            }
+        } catch (Exception e) {
+            showFatal(e.toString(), false);
+        }
 
-	return false;
+        return false;
     }
 
     protected void startThinking() {
-	thinking_from = new Date();
-	thinking_msecs = 0;
+        thinking_from = new Date();
+        thinking_msecs = 0;
     }
 
     protected void pauseThinking() {
-	Date now = new Date();
+        Date now = new Date();
 
-	if (thinking_from != null) {
-	    thinking_msecs += now.getTime() - thinking_from.getTime();
-	    thinking_from = null;
-	}
+        if (thinking_from != null) {
+            thinking_msecs += now.getTime() - thinking_from.getTime();
+            thinking_from = null;
+        }
     }
 
     protected void unpauseThinking() {
-	if (thinking_from == null) {
-	    thinking_from = new Date();
-	}
+        if (thinking_from == null) {
+            thinking_from = new Date();
+        }
     }
 
     protected long stopThinking() {
-	pauseThinking();
-	return thinking_msecs;
+        pauseThinking();
+        return thinking_msecs;
     }
 
     abstract void showFatal(String msg, boolean exit);

@@ -33,58 +33,58 @@ class MapKeysPanel
     public static final String pressInfoText = "Press the key to ";
 
     public final static String keyQuery[] = {
-	    "assign grade 0",
-	    "assign grade 1",
-	    "assign grade 2",
-	    "assign grade 3",
-	    "assign grade 4",
-	    "assign grade 5",
-	    "show statistics",
-	    "skip a card"
-	};
+            "assign grade 0",
+            "assign grade 1",
+            "assign grade 2",
+            "assign grade 3",
+            "assign grade 4",
+            "assign grade 5",
+            "show statistics",
+            "skip a card"
+        };
     public int currentKey = 0;
     public int numKeys;
     public int keyCode[];
 
     public MapKeysPanel(FireScreen s, CommandListener li, Command cmd,
-		        Configuration config)
+                        Configuration config)
     {
-	super(configureKeysTitle, s, li, cmd, config);
-	
-	numKeys = keyQuery.length;
-	keyCode = new int[numKeys];
+        super(configureKeysTitle, s, li, cmd, config);
+        
+        numKeys = keyQuery.length;
+        keyCode = new int[numKeys];
 
-	showQuery();
+        showQuery();
     }
 
     private void showQuery()
     {
-	System.out.println("showQuery: " + Integer.toString(currentKey));
-	Container display = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+        System.out.println("showQuery: " + Integer.toString(currentKey));
+        Container display = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 
-	TextComponent text = new TextComponent(pressInfoText
-				    + keyQuery[currentKey]);
-	text.setFont(labelFont);
-	text.setLayout(FireScreen.CENTER | FireScreen.VCENTER);
-	text.validate();
+        TextComponent text = new TextComponent(pressInfoText
+                                    + keyQuery[currentKey]);
+        text.setFont(labelFont);
+        text.setLayout(FireScreen.CENTER | FireScreen.VCENTER);
+        text.validate();
 
-	display.add(text);
-	display.setPrefSize(screen.getWidth(), labelFontHeight * 4);
+        display.add(text);
+        display.setPrefSize(screen.getWidth(), labelFontHeight * 4);
 
-	set(display);
-	repaint();
+        set(display);
+        repaint();
     }
 
     protected void keyReleased(int keyCode)
     {
-	this.keyCode[currentKey] = keyCode;
-	currentKey++;
+        this.keyCode[currentKey] = keyCode;
+        currentKey++;
 
-	if (currentKey == numKeys) {
-	    exitPanel();
-	} else {
-	    showQuery();
-	}
+        if (currentKey == numKeys) {
+            exitPanel();
+        } else {
+            showQuery();
+        }
     }
 }
 

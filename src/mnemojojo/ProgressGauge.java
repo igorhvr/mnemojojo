@@ -38,51 +38,51 @@ public class ProgressGauge
 
     private void setGauge(String msg)
     {
-	progressGauge = new ProgressbarAnimation(msg);
-	progressGauge.setWidth(FireScreen.getScreen().getWidth());
-	progressGauge.setHeight(
-	    FireScreen.getTheme().getFontProperty("titlebar.font").getHeight());
-	progressGauge.setPosition(0,0);
+        progressGauge = new ProgressbarAnimation(msg);
+        progressGauge.setWidth(FireScreen.getScreen().getWidth());
+        progressGauge.setHeight(
+            FireScreen.getTheme().getFontProperty("titlebar.font").getHeight());
+        progressGauge.setPosition(0,0);
     }
 
     public void startOperation(int length, String msg)
     {
-	showGauge(msg);
-	progressValue = 0;
-	progressTotal = length;
+        showGauge(msg);
+        progressValue = 0;
+        progressTotal = length;
     }
 
     public void updateOperation(int delta)
     {
-	progressValue += delta;
-	if (progressGauge != null) {
-	    progressGauge.progress((100 * progressValue) / progressTotal);
-	    FireScreen.getScreen().serviceRepaints();
-	}
+        progressValue += delta;
+        if (progressGauge != null) {
+            progressGauge.progress((100 * progressValue) / progressTotal);
+            FireScreen.getScreen().serviceRepaints();
+        }
     }
 
     public void stopOperation()
     {
-	hideGauge();
+        hideGauge();
     }
 
     void showGauge(String msg)
     {
-	if (progressGauge != null) {
-	    progressGauge.setMessage(msg);
-	} else {
-	    setGauge(msg);
-	    FireScreen.getScreen().addComponent(progressGauge, 6);
-	}
-	FireScreen.getScreen().serviceRepaints();
+        if (progressGauge != null) {
+            progressGauge.setMessage(msg);
+        } else {
+            setGauge(msg);
+            FireScreen.getScreen().addComponent(progressGauge, 6);
+        }
+        FireScreen.getScreen().serviceRepaints();
     }
     
     void hideGauge()
     {
-	if (progressGauge != null) {
-	    FireScreen.getScreen().removeComponent(progressGauge);
-	    progressGauge = null;
-	}
+        if (progressGauge != null) {
+            FireScreen.getScreen().removeComponent(progressGauge);
+            progressGauge = null;
+        }
     }
 }
 

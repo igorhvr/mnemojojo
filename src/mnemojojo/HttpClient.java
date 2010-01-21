@@ -26,46 +26,46 @@ class HttpClient
 
     public HttpClient(FireConnector connector)
     {
-	super(connector);
+        super(connector);
     }
 
     public void setUrlPrefix(String prefix)
     {
-	if (prefix.indexOf(' ') == -1) {
-	    this.prefix = prefix;
+        if (prefix.indexOf(' ') == -1) {
+            this.prefix = prefix;
 
-	} else {
-	    StringBuffer strb = new StringBuffer();
-	    char c;
+        } else {
+            StringBuffer strb = new StringBuffer();
+            char c;
 
-	    for (int i=0; i < prefix.length(); ++i) {
-		c = prefix.charAt(i);
+            for (int i=0; i < prefix.length(); ++i) {
+                c = prefix.charAt(i);
 
-		if (c == ' ') {
-		    strb.append("%20");
-		} else {
-		    strb.append(c);
-		}
-	    }
+                if (c == ' ') {
+                    strb.append("%20");
+                } else {
+                    strb.append(c);
+                }
+            }
 
-	    this.prefix = strb.toString();
-	}
+            this.prefix = strb.toString();
+        }
     }
 
     public Request requestResource(String url,
-				   String requestMethod,
-				   Hashtable requestProperties,
-				   byte[] data,
-				   boolean updateCurrentPage)
+                                   String requestMethod,
+                                   Hashtable requestProperties,
+                                   byte[] data,
+                                   boolean updateCurrentPage)
     {
-	String newurl = url;
-	if (prefix != null) {
-	    newurl = prefix + url;
-	}
+        String newurl = url;
+        if (prefix != null) {
+            newurl = prefix + url;
+        }
 
-	return super.requestResource(newurl,
-				     requestMethod, requestProperties,
-				     data, updateCurrentPage);
+        return super.requestResource(newurl,
+                                     requestMethod, requestProperties,
+                                     data, updateCurrentPage);
     }
 }
 

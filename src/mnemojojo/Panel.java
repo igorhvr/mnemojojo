@@ -26,55 +26,55 @@ class Panel
     Panel scrollPanel;
 
     public Panel(Container cnt, int scrollbarPolicy, boolean showDecorations,
-		 CheckKeys keyChecker)
+                 CheckKeys keyChecker)
     {
-	super(cnt, scrollbarPolicy, showDecorations);
-	this.keyChecker = keyChecker;
+        super(cnt, scrollbarPolicy, showDecorations);
+        this.keyChecker = keyChecker;
     }
 
     public Panel(Container cnt, int scrollbarPolicy, boolean showDecorations)
     {
-	super(cnt, scrollbarPolicy, showDecorations);
+        super(cnt, scrollbarPolicy, showDecorations);
     }
 
     public int[] getPrefSize()
     {
-	if ((prefWidth == -1) && (prefHeight == -1)) {
-	    return null;
-	}
+        if ((prefWidth == -1) && (prefHeight == -1)) {
+            return null;
+        }
 
-	if (prefWidth == -1) {
-	    return new int[]{FireScreen.getScreen().getWidth(),prefHeight};
-	}
+        if (prefWidth == -1) {
+            return new int[]{FireScreen.getScreen().getWidth(),prefHeight};
+        }
 
-	if (prefHeight == -1) {
-	    return new int[]{prefWidth, FireScreen.getScreen().getHeight()};
-	}
+        if (prefHeight == -1) {
+            return new int[]{prefWidth, FireScreen.getScreen().getHeight()};
+        }
 
-	return new int[]{prefWidth, prefHeight};
+        return new int[]{prefWidth, prefHeight};
     }
 
     protected void keyReleased(int keyCode)
     {
-	if ((keyListener != null)
-	    && (keyChecker != null)
-	    && (keyChecker.catchKey(keyCode)))
-	{
-	    keyListener.keyReleased(keyCode, this);
+        if ((keyListener != null)
+            && (keyChecker != null)
+            && (keyChecker.catchKey(keyCode)))
+        {
+            keyListener.keyReleased(keyCode, this);
 
-	} else if (scrollPanel != null) {
-	    FireScreen screen = FireScreen.getScreen();
-	    int gameCode = screen.getGameAction(keyCode);
+        } else if (scrollPanel != null) {
+            FireScreen screen = FireScreen.getScreen();
+            int gameCode = screen.getGameAction(keyCode);
 
-	    if (gameCode == Canvas.UP || gameCode == Canvas.DOWN) {
-		scrollPanel.scroll(gameCode, normalVScrollLength);
-	    } else {
-		super.keyReleased(keyCode);
-	    }
+            if (gameCode == Canvas.UP || gameCode == Canvas.DOWN) {
+                scrollPanel.scroll(gameCode, normalVScrollLength);
+            } else {
+                super.keyReleased(keyCode);
+            }
 
-	} else {
-	    super.keyReleased(keyCode);
-	}
+        } else {
+            super.keyReleased(keyCode);
+        }
     }
 }
 

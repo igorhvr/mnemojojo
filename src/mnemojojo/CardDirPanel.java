@@ -52,117 +52,117 @@ class CardDirPanel
     protected String browsepath = null;
 
     public CardDirPanel(FireScreen s, CommandListener li, Command cmdDone,
-			Configuration config)
+                        Configuration config)
     {
-	super(carddirTitle, s, li, cmdDone, config);
-	progress = new ProgressGauge();
+        super(carddirTitle, s, li, cmdDone, config);
+        progress = new ProgressGauge();
 
-	cmdCancel = new Command(cancelText, Command.CANCEL, 4);
+        cmdCancel = new Command(cancelText, Command.CANCEL, 4);
 
-	setCommandListener(this);	
-	setRightSoftKeyCommand(cmdCancel);
+        setCommandListener(this);       
+        setRightSoftKeyCommand(cmdCancel);
     }
 
     public void makeList(boolean full)
     {
-	String dbs[] = null;
+        String dbs[] = null;
 
-	progress.showGauge(lookingText);
-	if (full) {
-	    dbs = FindCardDir.list();
-	} else {
-	    dbs = FindCardDir.checkStandard();
-	}
-	progress.hideGauge();
+        progress.showGauge(lookingText);
+        if (full) {
+            dbs = FindCardDir.list();
+        } else {
+            dbs = FindCardDir.checkStandard();
+        }
+        progress.hideGauge();
 
-	Container buttons = new Container(new BoxLayout(BoxLayout.Y_AXIS));
-	
-	if (dbs != null) {
-	    for (int i=0; i < dbs.length; ++i) {
-		buttons.add(buttonRow(dbs[i]));
-	    }
-	}
+        Container buttons = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+        
+        if (dbs != null) {
+            for (int i=0; i < dbs.length; ++i) {
+                buttons.add(buttonRow(dbs[i]));
+            }
+        }
 
-	if (!full) {
-	    buttons.add(buttonRow(autoText));
-	}
-	buttons.add(buttonRow(manualText));
+        if (!full) {
+            buttons.add(buttonRow(autoText));
+        }
+        buttons.add(buttonRow(manualText));
 
-	set(buttons);
+        set(buttons);
     }
 
     protected void listDirs(String path)
     {
-	boolean isCardDir = false;
-	Enumeration e;
+        boolean isCardDir = false;
+        Enumeration e;
 
-	progress.showGauge(lookingText);
-	if (path == null) {
-	    browsepath = "file:///";
-	    e = FileSystemRegistry.listRoots();
+        progress.showGauge(lookingText);
+        if (path == null) {
+            browsepath = "file:///";
+            e = FileSystemRegistry.listRoots();
 
-	} else {
-	    browsepath = path;
-	    Vector subdirs = new Vector();
-	    isCardDir = FindCardDir.isCardDir(path, subdirs);
-	    e = subdirs.elements();
-	}
-	progress.hideGauge();
+        } else {
+            browsepath = path;
+            Vector subdirs = new Vector();
+            isCardDir = FindCardDir.isCardDir(path, subdirs);
+            e = subdirs.elements();
+        }
+        progress.hideGauge();
 
-	Container buttons = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+        Container buttons = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 
-	while (e.hasMoreElements()) {
-	    buttons.add(buttonRow((String)e.nextElement()));
-	}
+        while (e.hasMoreElements()) {
+            buttons.add(buttonRow((String)e.nextElement()));
+        }
 
-	set(buttons);
+        set(buttons);
 
-	if (isCardDir) {
-	    cmdChoose = new Command(chooseText, Command.OK, 3);
-	    setLeftSoftKeyCommand(cmdChoose);
-	}
+        if (isCardDir) {
+            cmdChoose = new Command(chooseText, Command.OK, 3);
+            setLeftSoftKeyCommand(cmdChoose);
+        }
     }
 
     public void commandAction(javax.microedition.lcdui.Command cmd, Component c)
     {
-	if (cmdButton.equals(cmd)) {
-	    InputComponent input = (InputComponent)c;
-	    String label = input.getValue();
+        if (cmdButton.equals(cmd)) {
+            InputComponent input = (InputComponent)c;
+            String label = input.getValue();
 
-	    // Note: root names should not equal autoText or manualText!
+            // Note: root names should not equal autoText or manualText!
 
-	    if (browsepath != null) {
-		CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone,
-						    config);
-		cdp.cardpath = cardpath;
-		cdp.listDirs(browsepath + label);
-		screen.setCurrent(cdp);
+            if (browsepath != null) {
+                CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone,
+                                                    config);
+                cdp.cardpath = cardpath;
+                cdp.listDirs(browsepath + label);
+                screen.setCurrent(cdp);
 
-	    } else if (autoText.equals(label)) {
-		CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone,
-						    config);
-		cdp.cardpath = cardpath;
-		cdp.makeList(true);
-		screen.setCurrent(cdp);
+            } else if (autoText.equals(label)) {
+                CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone,
+                                                    config);
+                cdp.cardpath = cardpath;
+                cdp.makeList(true);
+                screen.setCurrent(cdp);
 
-	    } else if (manualText.equals(label)) {
-		CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone,
-						    config);
-		cdp.cardpath = cardpath;
-		cdp.listDirs(null);
-		screen.setCurrent(cdp);
+            } else if (manualText.equals(label)) {
+                CardDirPanel cdp = new CardDirPanel(screen, listener, cmdDone,
+                                                    config);
+                cdp.cardpath = cardpath;
+                cdp.listDirs(null);
+                screen.setCurrent(cdp);
 
-	    } else {
-		cardpath = label;
-		exitPanel();
-	    }
-	} else if (cmdCancel.equals(cmd)) {
-	    exitPanel();
+            } else {
+                cardpath = label;
+                exitPanel();
+            }
+        } else if (cmdCancel.equals(cmd)) {
+            exitPanel();
 
-	} else if (cmdChoose.equals(cmd)) {
-	    cardpath = browsepath;
-	    exitPanel();
-	}
+        } else if (cmdChoose.equals(cmd)) {
+            cardpath = browsepath;
+            exitPanel();
+        }
     }
 }
 

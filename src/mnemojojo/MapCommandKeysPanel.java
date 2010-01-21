@@ -34,32 +34,32 @@ class MapCommandKeysPanel
     protected Command pressCmd = new Command(pressText, Command.OK, 1);
 
     public MapCommandKeysPanel(FireScreen s, CommandListener li, Command cmd,
-			       Configuration config)
+                               Configuration config)
     {
-	super(configureKeysTitle, s, li, cmd, config);
-	
-	Container cnt = new Container();
-	cnt.add(new TextComponent(pressInfoText));
-	set(cnt);
+        super(configureKeysTitle, s, li, cmd, config);
+        
+        Container cnt = new Container();
+        cnt.add(new TextComponent(pressInfoText));
+        set(cnt);
 
-	setLeftSoftKeyCommand(pressCmd);
-	showingLeft = true;
+        setLeftSoftKeyCommand(pressCmd);
+        showingLeft = true;
 
-	screen.leftSoftKey = 0;
-	screen.rightSoftKey = 0;
+        screen.leftSoftKey = 0;
+        screen.rightSoftKey = 0;
     }
 
     protected void keyReleased(int keyCode)
     {
-	if (showingLeft) {
-	    screen.leftSoftKey = keyCode;
-	    setLeftSoftKeyCommand(null);
-	    setRightSoftKeyCommand(pressCmd);
-	    showingLeft = false;
-	} else {
-	    screen.rightSoftKey = keyCode;
-	    exitPanel();
-	}
+        if (showingLeft) {
+            screen.leftSoftKey = keyCode;
+            setLeftSoftKeyCommand(null);
+            setRightSoftKeyCommand(pressCmd);
+            showingLeft = false;
+        } else {
+            screen.rightSoftKey = keyCode;
+            exitPanel();
+        }
     }
 }
 
