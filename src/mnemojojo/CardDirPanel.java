@@ -31,7 +31,7 @@ import gr.fire.core.BoxLayout;
 import gr.fire.ui.TextComponent;
 import gr.fire.ui.InputComponent;
 
-import mnemogogo.mobile.hexcsv.FindCardDir;
+import mnemogogo.mobile.hexcsv.FindCardDirJ2ME;
 
 class CardDirPanel
     extends SubPanel
@@ -69,9 +69,9 @@ class CardDirPanel
 
         progress.showGauge(lookingText);
         if (full) {
-            dbs = FindCardDir.list();
+            dbs = FindCardDirJ2ME.list();
         } else {
-            dbs = FindCardDir.checkStandard();
+            dbs = FindCardDirJ2ME.checkStandard();
         }
         progress.hideGauge();
 
@@ -104,7 +104,7 @@ class CardDirPanel
         } else {
             browsepath = path;
             Vector subdirs = new Vector();
-            isCardDir = FindCardDir.isCardDir(path, subdirs);
+            isCardDir = FindCardDirJ2ME.isCardDir(path, subdirs);
             e = subdirs.elements();
         }
         progress.hideGauge();

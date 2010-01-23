@@ -13,6 +13,9 @@ WTKVERSION=2.5.2
 WTKDEVICE=DefaultColorPhone
 JAVAFILESYS=$(HOME)/j2mewtk/$(WTKVERSION)/appdb/$(WTKDEVICE)/filesystem
 
+# Mnemogogo library
+MNEMOGOGO=$(HOME)/.mnemosyne/plugins/mnemogogo/mnemogogo-j2me-0.9.10.jar
+
 # Microemulator installation
 MICROEMU=/opt/microemulator
 
@@ -54,18 +57,23 @@ microemulatorconfig:
 	    $(HOME)/.microemulator/config2.xml.bkp \
 	    > $(HOME)/.microemulator/config2.xml
 
-compile: sources tmpclasses
+compile: sources tmpclasses tmpclasses/mnemogogo
 	$(JAVAC) \
 	  -source 1.4 -target 1.4 \
 	  -bootclasspath $(WTK)/lib/$(CLDCAPI):$(WTK)/lib/$(MIDPAPI):$(WTK)/lib/jsr75.jar \
+	  -classpath tmpclasses \
 	  -d tmpclasses @sources
 
-preverify: compile classes
+preverify: compile classes tmpclasses/mnemogogo
 	$(WTK)/bin/preverify \
-	  -classpath $(WTK)/lib/$(CLDCAPI):$(WTK)/lib/$(MIDPAPI):$(WTK)/lib/jsr75.jar \
+	  -classpath tmpclasses:$(WTK)/lib/$(CLDCAPI):$(WTK)/lib/$(MIDPAPI):$(WTK)/lib/jsr75.jar \
 	  -d classes tmpclasses
 
-bin/mnemojojo.jar: preverify bin/MANIFEST.MF bin
+tmpclasses/mnemogogo: $(MNEMOGOGO)
+	mkdir -p tmpclasses
+	cd tmpclasses && jar xf $(MNEMOGOGO) mnemogogo
+
+bin/mnemojojo.jar: preverify bin/MANIFEST.MF bin tmpclasses/mnemogogo
 	$(JAR) cfm bin/mnemojojo.jar bin/MANIFEST.MF -C classes . -C res .
 
 bin/mnemojojo.jad: bin/mnemojojo.jar version bin
@@ -96,7 +104,7 @@ bin/MANIFEST.MF: version bin
 	@echo "MicroEdition-Profile: MIDP-2.0" >> bin/MANIFEST.MF
 
 sources:
-	find -L ./src -regex '.*\.java$$' > sources
+	find -L ./src -regex '.*.java$$' -and -not -regex '.*Android.java$$' > sources
 
 tmpclasses:
 	mkdir tmpclasses
@@ -115,4 +123,7 @@ clean:
 	-@find tmpclasses -depth -type d -exec rmdir {} \; 2>/dev/null || true
 	-@find classes -name '*.class' -delete             2>/dev/null || true
 	-@find classes -depth -type d -exec rmdir {} \;    2>/dev/null || true
+
+cleanall: clean
+	-@rm sources
 

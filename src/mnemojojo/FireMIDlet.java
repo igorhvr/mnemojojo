@@ -32,8 +32,7 @@ import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.Font;
 
 import mnemogogo.mobile.hexcsv.Card;
-import mnemogogo.mobile.hexcsv.HexCsv;
-import mnemogogo.mobile.hexcsv.FindCardDir;
+import mnemogogo.mobile.hexcsv.FindCardDirJ2ME;
 import mnemogogo.mobile.hexcsv.Progress;
 
 import gr.fire.browser.Browser;
@@ -509,7 +508,7 @@ public class FireMIDlet
 
         // copy across the current configured values
         if ((config.cardpath != null)
-            && (FindCardDir.isCardDir(config.cardpath, null))) {
+            && (FindCardDirJ2ME.isCardDir(config.cardpath, null))) {
             aboutPanel.cardpath = config.cardpath;
         } else {
             config.cardpath = null;

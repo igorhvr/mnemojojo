@@ -17,7 +17,7 @@ package mnemojojo;
 import java.lang.*;
 import java.util.Date;
 import java.io.IOException;
-import mnemogogo.mobile.hexcsv.HexCsv;
+import mnemogogo.mobile.hexcsv.HexCsvJ2ME;
 import mnemogogo.mobile.hexcsv.Progress;
 import mnemogogo.mobile.hexcsv.Card;
 
@@ -28,7 +28,7 @@ abstract class Core
     extends MIDlet
 {
     protected Configuration config = new Configuration();
-    protected HexCsv carddb;
+    protected HexCsvJ2ME carddb;
 
     protected Card curCard;
     private Date thinking_from;
@@ -147,7 +147,7 @@ abstract class Core
         }
 
         try {
-            carddb = new HexCsv(config.cardpath, progressHandler);
+            carddb = new HexCsvJ2ME(config.cardpath, progressHandler);
             carddb.cards_to_load = config.cardsToLoad;
             setCardDir(config.cardpath);
         } catch (Exception e) {
