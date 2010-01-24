@@ -121,6 +121,8 @@ public class FireMIDlet
             }
         } catch (Exception e) {}
 
+        screen.setFireListener(this);
+
         progressGauge = new ProgressGauge();
         progressHandler = (Progress)progressGauge;
 
@@ -623,6 +625,7 @@ public class FireMIDlet
             return;
         
         } else if (cmd.equals(cmdReshow)) {
+            currentPanel.validate();
             screen.setCurrent(currentPanel);
 
         } else if (cmd.equals(cmdButton)) {
@@ -713,6 +716,7 @@ public class FireMIDlet
             return;
 
         } else if (cmd.equals(cmdReshow)) {
+            currentPanel.validate();
             screen.setCurrent(currentPanel);
             return;
         }
