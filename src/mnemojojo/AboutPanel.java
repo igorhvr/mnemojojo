@@ -83,6 +83,8 @@ public class AboutPanel
     public String cardpath;
     public int cardsToLoad;
 
+    private Container aboutCnt;
+
     public AboutPanel(FireScreen screen, String versionInfo,
                       gr.fire.core.CommandListener li,
                       Command cmdLeft, Command cmdRight,
@@ -101,7 +103,7 @@ public class AboutPanel
         cmdLeftRightDone = new Command("invisible", Command.OK, 1);
         cmdKeysDone = new Command("invisible", Command.OK, 1);
         cmdChangeDir = new Command("invisible", Command.OK, 1);
-        Container aboutCnt = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+        aboutCnt = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 
         // title image
         try {
@@ -284,5 +286,24 @@ public class AboutPanel
             exitPanel(cmd);
         }
     }
+
+    public void screenSizeChanged(int newWidth, int newHeight) {
+        super.screenSizeChanged(newWidth, newHeight);
+
+        if (aboutCnt == null) {
+            return;
+        }
+
+        int cw = columnWidth(newWidth);
+        int n = aboutCnt.countComponents();
+        for (int i=0; i < n; ++i) {
+            Component c = aboutCnt.getComponent(i);
+            int[] size = c.getPrefSize();
+            if ((size != null) && (size[1] > -1)) {
+                c.setPrefSize(cw, size[1]);
+            }
+        }
+    }
+
 }
 

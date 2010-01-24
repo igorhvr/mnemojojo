@@ -576,18 +576,26 @@ public class FireMIDlet
 
     public void sizeChanged(int newWidth, int newHeight)
     {
-        try {
-            Panel disPanel = (Panel)screen.getCurrent();
-            if (disPanel != null) {
-                // side effect: recalculates position of label
-                disPanel.setLabel(disPanel.getLabel());
+        System.out.println("!!sizeChanged(" + Integer.toString(newWidth) + ", " + Integer.toString(newHeight) + ")"); // XXX
 
-                if ((currentPanel != null) && (currentPanel != disPanel)) {
-                    // side effect: recalculates position of label
-                    currentPanel.setLabel(currentPanel.getLabel());
-                }
+        try {
+            Panel panel = (Panel)screen.getCurrent();
+            panel.screenSizeChanged(newWidth, newHeight);
+            panel.repaint();
+
+        } catch (ClassCastException e) {
+            System.out.println("!!!Exception: " + e.toString()); // XXX
+        }
+
+        if ((currentPanel != null) && (currentPanel != screen.getCurrent())) {
+            try {
+                Panel panel = (Panel)currentPanel;
+                panel.screenSizeChanged(newWidth, newHeight);
+                panel.repaint();
+            } catch (ClassCastException e) {
+                System.out.println("!!!Exception: " + e.toString()); // XXX
             }
-        } catch (Exception e) {}
+        }
 
         if (gradeButtons != null) {
             int[] size = gradeButtons.getPrefSize();
@@ -625,8 +633,8 @@ public class FireMIDlet
             return;
         
         } else if (cmd.equals(cmdReshow)) {
-            currentPanel.validate();
             screen.setCurrent(currentPanel);
+            currentPanel.validate();
 
         } else if (cmd.equals(cmdButton)) {
             String val = ((InputComponent)c).getValue();
@@ -716,8 +724,8 @@ public class FireMIDlet
             return;
 
         } else if (cmd.equals(cmdReshow)) {
-            currentPanel.validate();
             screen.setCurrent(currentPanel);
+            currentPanel.validate();
             return;
         }
     }

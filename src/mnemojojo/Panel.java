@@ -59,5 +59,12 @@ class Panel
             super.keyReleased(keyCode);
         }
     }
+
+    public void screenSizeChanged(int newWidth, int newHeight)
+    {
+        System.out.println("!!Panel.screenSizeChanged"); // XXX
+        // side effect: recalculates position of label
+        setLabel(getLabel());
+    }
 }
 

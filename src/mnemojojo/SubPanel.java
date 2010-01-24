@@ -32,7 +32,7 @@ import gr.fire.ui.InputComponent;
 import gr.fire.ui.TextComponent;
 
 class SubPanel
-    extends gr.fire.core.Panel
+    extends Panel
     implements CommandListener,
                gr.fire.core.CommandListener
 {
@@ -79,7 +79,7 @@ class SubPanel
         this.config = config;
         setLabel(title);
 
-        screenWidth = ((screen.getWidth() - edgeGap) * 8 / 10); // 80%
+        screenWidth = columnWidth(screen.getWidth());
 
         if (sectionFont == null) {
             int standardFontSize;
@@ -124,6 +124,11 @@ class SubPanel
         cmdButton = new Command("invisible", Command.OK, 1);
     }
 
+    public int columnWidth(int screenWidth)
+    {
+        return ((screenWidth - edgeGap) * 8 / 10); // 80%
+    }
+
     protected void exitPanel(Command cmd)
     {
         listener.commandAction(cmd, (Component)this);
@@ -159,15 +164,14 @@ class SubPanel
     {
         Container row = new Container(new BoxLayout(BoxLayout.X_AXIS));
 
-        int titleWidth = (int)(screenWidth / 2.3);
+        int titleWidth = (int)(titleFont.stringWidth("Mnemosyne: "));
         
         TextComponent titleCmp = new TextComponent(title + ":", titleWidth);
         titleCmp.setFont(titleFont);
         titleCmp.setLayout(FireScreen.TOP | FireScreen.LEFT);
         titleCmp.validate();
 
-        TextComponent textCmp = new TextComponent(text,
-                                        screenWidth - titleWidth);
+        TextComponent textCmp = new TextComponent(text);
         textCmp.setFont(textFont);
         textCmp.setLayout(FireScreen.TOP | FireScreen.LEFT);
         textCmp.validate();

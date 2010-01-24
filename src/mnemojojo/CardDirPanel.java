@@ -164,5 +164,21 @@ class CardDirPanel
             exitPanel();
         }
     }
+
+    public void screenSizeChanged(int newWidth, int newHeight) {
+        super.screenSizeChanged(newWidth, newHeight);
+
+        Container container = (Container)getComponent(0);
+
+        int cw = columnWidth(newWidth);
+        int n = container.countComponents();
+        for (int i=0; i < n; ++i) {
+            Component c = container.getComponent(i);
+            int[] size = c.getPrefSize();
+            if ((size != null) && (size[1] > -1)) {
+                c.setPrefSize(cw, size[1]);
+            }
+        }
+    }
 }
 
