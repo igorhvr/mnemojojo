@@ -37,7 +37,7 @@ emulator: bin/mnemojojo.jar bin/mnemojojo.jad filesystem
 	$(WTK)/bin/emulator \
 	  -Xdevice:$(WTKDEVICE) \
 	  -Xdomain:maximum \
-	  -Xheapsize:500k \
+	  -Xheapsize:1024k \
 	  -Xdescriptor:bin/mnemojojo.jad
 
 filesystem:

@@ -44,6 +44,7 @@ import gr.fire.core.Component;
 import gr.fire.core.Theme;
 import gr.fire.util.Log;
 import gr.fire.util.FireConnector;
+import gr.fire.core.FireListener;
 
 // for buttons:
 import gr.fire.core.BoxLayout;
@@ -55,7 +56,8 @@ public class FireMIDlet
     extends Core
     implements CommandListener,
                gr.fire.core.CommandListener,
-               KeyListener
+               KeyListener,
+               FireListener
 {
     boolean initialized = false;
 
@@ -102,7 +104,6 @@ public class FireMIDlet
 
     public FireMIDlet()
     {
-        //try { // XXX
         Log.showDebug = debug;
 
         display = Display.getDisplay(this);
@@ -125,7 +126,6 @@ public class FireMIDlet
 
         httpClient = new HttpClient(new FireConnector());
         browser = new Browser(httpClient);
-        browser.setImageCachePolicy(true); // keep cache
 
         cmdOk = new Command(okText, Command.OK, 1); 
         cmdExit = new Command(exitText, Command.EXIT, 5);
@@ -134,18 +134,11 @@ public class FireMIDlet
         cmdShowA = new Command(closeText, Command.ITEM, 1);
         cmdReshow = new Command(closeText, Command.ITEM, 1);
         cmdButton = new Command("invisible", Command.OK, 1);
-        //} catch (Exception e) { // XXX
-        //    Debug.logln("FireMIDlet(): exception: " + e.toString()); // XXX
-        //    e.printStackTrace(); // XXX
-        //} // XXX
-        //
     }
 
     public void startApp()
         throws MIDletStateChangeException
     {
-        //Debug.logln("startApp()"); // XXX
-        //try { // XXX
         if (!initialized) {
             if (config.leftSoftKey != 0) {
                 screen.leftSoftKey = config.leftSoftKey;
@@ -156,10 +149,6 @@ public class FireMIDlet
             showAbout();
             initialized = true;
         }
-        //} catch (Exception e) { // XXX
-        //    Debug.logln("startApp(): exception: " + e.toString()); // XXX
-        //    e.printStackTrace(); // XXX
-        //} // XXX
     }
 
     public void destroyApp(boolean unconditional)
@@ -293,7 +282,7 @@ public class FireMIDlet
         padPane.setShowBackground(true);
         padPane.setBackgroundColor(
             FireScreen.getTheme().getIntProperty("titlebar.bg.color"));
-        padPane.setPrefSize(-1, buttonHeight);
+        padPane.setPrefSize(FireScreen.getScreen().getWidth(), buttonHeight);
 
         return padPane;
     }
@@ -534,12 +523,8 @@ public class FireMIDlet
     void showQuestionScreen()
     {
         if (currentCard != null) {
-            browser.clearImageCache();
             currentPanel = makeDisplay(makePage(makeCardHtml(false).toString()),
                                         BUTTONS_SHOW, cmdShow, cmdExit);
-            if (curCard.getOverlay()) {
-                browser.clearImageCache();
-            }
             currentPanel.setLeftSoftKeyCommand(cmdShow);
             currentPanel.setRightSoftKeyCommand(cmdExit);
             currentPanel.setKeyListener(this);
@@ -555,7 +540,6 @@ public class FireMIDlet
     {
         currentPanel = makeDisplay(makePage(makeCardHtml(true).toString()),
                                   BUTTONS_GRADE, null, cmdExit);
-        browser.clearImageCache();
         currentPanel.setRightSoftKeyCommand(cmdExit);
         currentPanel.setKeyListener(this);
         currentPanel.setLabel(currentTitle);
@@ -585,6 +569,45 @@ public class FireMIDlet
         theme.setFontProperty("xhtml.font", new_font);
         screen.setTheme(theme);
     }
+
+    /* FireListener methods */
+
+    public void sizeChanged(int newWidth, int newHeight)
+    {
+        try {
+            Panel disPanel = (Panel)screen.getCurrent();
+            if (disPanel != null) {
+                // side effect: recalculates position of label
+                disPanel.setLabel(disPanel.getLabel());
+
+                if ((currentPanel != null) && (currentPanel != disPanel)) {
+                    // side effect: recalculates position of label
+                    currentPanel.setLabel(currentPanel.getLabel());
+                }
+            }
+        } catch (Exception e) {}
+
+        if (gradeButtons != null) {
+            int[] size = gradeButtons.getPrefSize();
+            if ((size != null) && (size[1] >= 0)) {
+                gradeButtons.setPrefSize(FireScreen.getScreen().getWidth(),
+                                         size[1]);
+            }
+        }
+
+        if (showButtons != null) {
+            int[] size = showButtons.getPrefSize();
+            if ((size != null) && (size[1] >= 0)) {
+                showButtons.setPrefSize(FireScreen.getScreen().getWidth(),
+                                        size[1]);
+            }
+        }
+    }
+
+    public void hideNotify() { }
+    public void showNotify() { }
+
+    /* Respond to input methods */
 
     public void commandAction(javax.microedition.lcdui.Command cmd, Component c)
     {

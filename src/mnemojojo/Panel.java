@@ -37,23 +37,6 @@ class Panel
         super(cnt, scrollbarPolicy, showDecorations);
     }
 
-    public int[] getPrefSize()
-    {
-        if ((prefWidth == -1) && (prefHeight == -1)) {
-            return null;
-        }
-
-        if (prefWidth == -1) {
-            return new int[]{FireScreen.getScreen().getWidth(),prefHeight};
-        }
-
-        if (prefHeight == -1) {
-            return new int[]{prefWidth, FireScreen.getScreen().getHeight()};
-        }
-
-        return new int[]{prefWidth, prefHeight};
-    }
-
     protected void keyReleased(int keyCode)
     {
         if ((keyListener != null)

@@ -16,8 +16,10 @@ package mnemojojo;
 
 import java.lang.*;
 import java.util.Hashtable;
+import java.io.IOException;
+import java.io.InterruptedIOException;
 import gr.fire.util.FireConnector;
-import gr.fire.browser.util.Request;
+import gr.fire.browser.util.Response;
 
 class HttpClient
     extends gr.fire.browser.util.HttpClient
@@ -52,11 +54,13 @@ class HttpClient
         }
     }
 
-    public Request requestResource(String url,
-                                   String requestMethod,
-                                   Hashtable requestProperties,
-                                   byte[] data,
-                                   boolean updateCurrentPage)
+    public Response requestResource(String url,
+                                    String requestMethod,
+                                    Hashtable requestProperties,
+                                    byte[] data,
+                                    boolean updateCurrentPage)
+        throws InterruptedIOException, SecurityException, IOException,
+               IllegalStateException, Exception
     {
         String newurl = url;
         if (prefix != null) {
