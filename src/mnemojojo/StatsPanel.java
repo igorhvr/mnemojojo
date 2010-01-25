@@ -14,40 +14,15 @@
 
 package mnemojojo;
 
-// TODO: tidy up the imports
 import java.lang.*;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.ByteArrayInputStream;
-import javax.microedition.io.Connector;
-import javax.microedition.io.HttpConnection;
-import javax.microedition.lcdui.Display;
-import javax.microedition.lcdui.Displayable;
-import javax.microedition.midlet.MIDlet;
-import javax.microedition.midlet.MIDletStateChangeException;
-import javax.microedition.lcdui.Command;
-import javax.microedition.lcdui.CommandListener;
-import javax.microedition.lcdui.Alert;
-import javax.microedition.lcdui.AlertType;
-import javax.microedition.lcdui.Command;
-import javax.microedition.lcdui.Font;
 
 import mnemogogo.mobile.hexcsv.HexCsvJ2ME;
 import mnemogogo.mobile.hexcsv.Card;
-import mnemogogo.mobile.hexcsv.FindCardDirJ2ME;
-import mnemogogo.mobile.hexcsv.Progress;
 
 import gr.fire.browser.Browser;
 import gr.fire.browser.util.Page;
-import gr.fire.ui.FireTheme;
-import gr.fire.core.FireScreen;
-import gr.fire.core.KeyListener;
-import gr.fire.core.Component;
 import gr.fire.core.Container;
-import gr.fire.core.Theme;
-import gr.fire.util.Log;
-import gr.fire.util.FireConnector;
-import gr.fire.core.FireListener;
 
 public class StatsPanel
     extends Panel

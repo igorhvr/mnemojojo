@@ -303,23 +303,17 @@ public class FireMIDlet
 
     public void sizeChanged(int newWidth, int newHeight)
     {
-        System.out.println("!!sizeChanged(" + Integer.toString(newWidth) + ", " + Integer.toString(newHeight) + ")"); // XXX
-
         try {
             Panel panel = (Panel)screen.getCurrent();
             panel.screenSizeChanged(newWidth, newHeight);
 
-        } catch (ClassCastException e) {
-            System.out.println("!!!Exception: " + e.toString()); // XXX
-        }
+        } catch (ClassCastException e) { }
 
         if ((currentPanel != null) && (currentPanel != screen.getCurrent())) {
             try {
                 Panel panel = (Panel)currentPanel;
                 panel.screenSizeChanged(newWidth, newHeight);
-            } catch (ClassCastException e) {
-                System.out.println("!!!Exception: " + e.toString()); // XXX
-            }
+            } catch (ClassCastException e) { }
         }
     }
 
