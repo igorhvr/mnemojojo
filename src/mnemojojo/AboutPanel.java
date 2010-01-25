@@ -266,7 +266,7 @@ public class AboutPanel
 
         } else if (cmdLeftRightDone.equals(cmd)) {
             screen.setCurrent(this);
-            repaintControls();
+            screenSizeChanged(screen.getWidth(), screen.getHeight());
             dirty = true;
 
         } else if (cmdKeysDone.equals(cmd)) {
@@ -275,7 +275,7 @@ public class AboutPanel
                 keys[i] = mkp.keyCode[i];
             }
             screen.setCurrent(this);
-            repaintControls();
+            screenSizeChanged(screen.getWidth(), screen.getHeight());
             dirty = true;
 
         } else if (cmdChangeDir.equals(cmd)) {
@@ -285,7 +285,7 @@ public class AboutPanel
                 dirty = true;
             }
             screen.setCurrent(this);
-            repaintControls();
+            screenSizeChanged(screen.getWidth(), screen.getHeight());
 
         } else if (cmdLeft.equals(cmd) || cmdRight.equals(cmd)) {
             cardsToLoad = Integer.parseInt(cardstoloadNum.getValue());

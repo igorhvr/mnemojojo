@@ -66,6 +66,7 @@ public class StatsPanel
 
         html = makeStatsText(carddb, curCard, config.cardpath);
         setLabel(statisticsText);
+        setDragScroll(true);
         makeDisplay();
     }
 

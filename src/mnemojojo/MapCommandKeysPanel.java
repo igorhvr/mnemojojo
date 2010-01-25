@@ -38,15 +38,20 @@ class MapCommandKeysPanel
     {
         super(configureKeysTitle, s, li, cmd, config);
         
-        Container cnt = new Container();
-        cnt.add(new TextComponent(pressInfoText));
-        set(cnt);
+        buildPanel();
 
         setLeftSoftKeyCommand(pressCmd);
         showingLeft = true;
 
         screen.leftSoftKey = 0;
         screen.rightSoftKey = 0;
+    }
+
+    protected void buildPanel()
+    {
+        Container cnt = new Container();
+        cnt.add(new TextComponent(pressInfoText));
+        set(cnt);
     }
 
     protected void keyReleased(int keyCode)
@@ -60,6 +65,12 @@ class MapCommandKeysPanel
             screen.rightSoftKey = keyCode;
             exitPanel();
         }
+    }
+
+    public void screenSizeChanged(int newWidth, int newHeight)
+    {
+        super.screenSizeChanged(newWidth, newHeight);
+        buildPanel();
     }
 }
 

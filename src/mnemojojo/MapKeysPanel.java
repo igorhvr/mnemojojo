@@ -59,7 +59,6 @@ class MapKeysPanel
 
     private void showQuery()
     {
-        System.out.println("showQuery: " + Integer.toString(currentKey));
         Container display = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 
         TextComponent text = new TextComponent(pressInfoText
@@ -85,6 +84,12 @@ class MapKeysPanel
         } else {
             showQuery();
         }
+    }
+
+    public void screenSizeChanged(int newWidth, int newHeight)
+    {
+        super.screenSizeChanged(newWidth, newHeight);
+        showQuery();
     }
 }
 
