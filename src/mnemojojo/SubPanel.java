@@ -327,5 +327,11 @@ class SubPanel
                               Component c)
     {
     }
+
+    public void screenSizeChanged(int newWidth, int newHeight)
+    {
+        super.screenSizeChanged(newWidth, newHeight);
+        screenWidth = columnWidth(newWidth);
+    }
 }
 

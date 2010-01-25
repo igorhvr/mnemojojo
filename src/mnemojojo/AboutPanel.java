@@ -294,6 +294,7 @@ public class AboutPanel
     }
 
     public void screenSizeChanged(int newWidth, int newHeight) {
+        super.screenSizeChanged(newWidth, newHeight);
         buildPanel();
     }
 
