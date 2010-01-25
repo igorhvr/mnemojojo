@@ -61,36 +61,15 @@ abstract class Core
     protected static final String closeText = "Close";
     protected static final String doneText
             = "There are no new cards to review.";
-    protected static final String nocardloadedText
-            = "Unexpected error: card not loaded.";
     protected static final String selectCarddir
             = "A card directory must be set before starting.";
     protected static final String notEnoughMemoryToLoadText
             = "Not enough memory to load cards.";
 
-    protected static final String statisticsText = "Statistics";
-    protected static final String currentCardText = "Current Card";
-    protected static final String easinessText = "Easiness";
-    protected static final String repetitionsText = "Repetitions";
-    protected static final String lapsesText = "Lapses";
-    protected static final String daysSinceLastText
-            = "Days since last repetition";
-    protected static final String daysUntilNextText
-            = "Days until next repetition";
-
-    protected static final String cardsdirText = "Cards: ";
     protected static final String updateOverdueText
             = "An export from Mnemosyne is overdue!";
     protected static final String updateTodayText
             = "An export from Mnemosyne is due today.";
-
-    protected static final String freeMemoryText = "Free bytes: ";
-    protected static final String totalMemoryText = "Total bytes: ";
-
-    protected static final String forDaysText
-            = "Scheduled cards for the next days";
-    protected static final String inText = "In";
-    protected static final String daysText = "day(s)";
 
     protected String[] aboutLines = {
             versionInfo,

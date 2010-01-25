@@ -103,6 +103,12 @@ public class AboutPanel
         cmdLeftRightDone = new Command("invisible", Command.OK, 1);
         cmdKeysDone = new Command("invisible", Command.OK, 1);
         cmdChangeDir = new Command("invisible", Command.OK, 1);
+
+        buildPanel();
+    }
+
+    private void buildPanel()
+    {
         aboutCnt = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 
         // title image
@@ -288,21 +294,7 @@ public class AboutPanel
     }
 
     public void screenSizeChanged(int newWidth, int newHeight) {
-        super.screenSizeChanged(newWidth, newHeight);
-
-        if (aboutCnt == null) {
-            return;
-        }
-
-        int cw = columnWidth(newWidth);
-        int n = aboutCnt.countComponents();
-        for (int i=0; i < n; ++i) {
-            Component c = aboutCnt.getComponent(i);
-            int[] size = c.getPrefSize();
-            if ((size != null) && (size[1] > -1)) {
-                c.setPrefSize(cw, size[1]);
-            }
-        }
+        buildPanel();
     }
 
 }

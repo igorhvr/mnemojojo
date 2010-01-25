@@ -73,9 +73,6 @@ public class FireMIDlet
     Card currentCard;
     String currentTitle;
 
-    Panel showButtons;
-    Panel gradeButtons;
-
     ProgressGauge progressGauge;
 
     Command cmdOk;
@@ -96,19 +93,12 @@ public class FireMIDlet
     private final int WAIT = 4;
     private final int KEYMAP = 5;
 
-    protected final int BUTTONS_NONE = 0;
-    protected final int BUTTONS_SHOW = 1;
-    protected final int BUTTONS_GRADE = 2;
-
-    Runtime rt = Runtime.getRuntime();
-
     public FireMIDlet()
     {
         Log.showDebug = debug;
 
         display = Display.getDisplay(this);
 
-        // initialize a browser instance
         screen = FireScreen.getScreen(display);
         config.setScreen(screen);
 
@@ -128,6 +118,8 @@ public class FireMIDlet
 
         httpClient = new HttpClient(new FireConnector());
         browser = new Browser(httpClient);
+        CardPanel.browser = browser;
+        StatsPanel.browser = browser;
 
         cmdOk = new Command(okText, Command.OK, 1); 
         cmdExit = new Command(exitText, Command.EXIT, 5);
@@ -167,190 +159,6 @@ public class FireMIDlet
         httpClient.setUrlPrefix(cardpath);
         path = new StringBuffer(cardpath);
         pathLen = path.length();
-    }
-
-    private Page makePage(String contents)
-    {
-        try {
-            ByteArrayInputStream in =
-                new ByteArrayInputStream(contents.getBytes("UTF-8"));
-            Page page = browser.loadPage(in, "UTF-8");
-            in.close();
-
-            return page;
-        } catch (Exception e) {
-            showFatal(e.toString(), false);
-        }
-
-        return null;
-    }
-
-    private Page loadPage(String pagePath)
-    {
-        try {
-            Page page = browser.loadPage(pagePath, HttpConnection.GET, null, null);
-            return page;
-        } catch (Exception e) {
-            showFatal(e.toString(), false);
-        }
-
-        return null;
-    }
-
-    StringBuffer makeCardHtml(boolean includeAnswer)
-    {
-        StringBuffer html = new StringBuffer(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<body>");
-
-        String question = curCard.getQuestion();
-        String answer = curCard.getAnswer();
-
-        if (config.centerText) {
-            html.append("<center>");
-        }
-
-        if (question == null || answer == null) {
-            html.append(nocardloadedText);
-
-        } else if (includeAnswer) {
-            if (!curCard.getOverlay()) {
-                html.append(question);
-                html.append("<hr/>");
-            }
-
-            html.append(answer);
-
-        } else {
-            html.append(question);
-        }
-
-        if (config.centerText) {
-            html.append("</center>");
-        }
-
-        html.append("</body>");
-
-        return html;
-    }
-
-    // from Fire demo: SimpleCalc.java
-    private Panel makeButtonRow(String symbols[],
-                                Command cmdLeft, Command cmdRight)
-    {
-        InputComponent button;
-
-        Font buttonFont;
-        int buttonHeight;
-        int rows = 1;
-        int cols = symbols.length;
-
-        if (config.isBigScreen) {
-            buttonFont = Font.getFont(Font.FACE_SYSTEM,
-                                      Font.STYLE_BOLD,
-                                      Font.SIZE_LARGE);
-            buttonHeight = buttonFont.getHeight() * 4;
-            if (symbols.length >= 6) {
-                rows = 2;
-                cols = symbols.length / 2;
-                buttonHeight *= 2;
-            }
-        } else {
-            buttonFont = Font.getFont(Font.FACE_SYSTEM,
-                                      Font.STYLE_BOLD,
-                                      Font.SIZE_MEDIUM);
-            buttonHeight = buttonFont.getHeight() * 2;
-        }
-
-        Container pad = new Container(new GridLayout(rows, cols));
-        
-        for(int i = 0; i<symbols.length; ++i) {
-            button = new InputComponent(InputComponent.BUTTON);
-            button.setValue(symbols[i]); 
-            button.setCommandListener(this);
-            button.setKeyListener(this);
-            button.setCommand(cmdButton);
-            button.setLeftSoftKeyCommand(cmdLeft);
-            button.setRightSoftKeyCommand(cmdRight);
-            button.setForegroundColor(
-                FireScreen.getTheme().getIntProperty("button.fg.color"));
-            button.setBackgroundColor(
-                FireScreen.getTheme().getIntProperty("button.bg.color"));
-            button.setFont(buttonFont);
-            button.setLayout(FireScreen.CENTER | FireScreen.VCENTER);
-            pad.add(button);
-        }
-        
-        Panel padPane = new Panel(pad, Panel.NO_SCROLLBAR, false);              
-        padPane.setShowBackground(true);
-        padPane.setBackgroundColor(
-            FireScreen.getTheme().getIntProperty("titlebar.bg.color"));
-        padPane.setPrefSize(FireScreen.getScreen().getWidth(), buttonHeight);
-
-        return padPane;
-    }
-
-    private Panel makeGradeButtons(Command cmdLeft, Command cmdRight)
-    {
-        String buttons[] = {"0", "1", "2", "3", "4", "5"};
-        return makeButtonRow(buttons, cmdLeft, cmdRight);
-    }
-
-    private Panel makeShowButtons(Command cmdLeft, Command cmdRight)
-    {
-        String buttons[] = {skipCardText, showAnswerText, showStatsText};
-        return makeButtonRow(buttons, cmdLeft, cmdRight);
-    }
-
-    private Panel makeDisplay(Page htmlPage, int buttonMode,
-                              Command cmdLeft, Command cmdRight)
-    {
-        if (!config.showButtons) {
-            buttonMode = BUTTONS_NONE;
-        }
-        boolean htmlDecorations = (buttonMode == BUTTONS_NONE);
-
-        // create a panel to display cards / information
-        Panel htmlPanel = new Panel(htmlPage.getPageContainer(),
-                                    Panel.VERTICAL_SCROLLBAR,
-                                    htmlDecorations,
-                                    config);
-        htmlPanel.setCommandListener(this);
-        htmlPanel.setDragScroll(true);
-        htmlPanel.setKeyListener(this);
-        htmlPanel.setLeftSoftKeyCommand(cmdLeft);
-        htmlPanel.setRightSoftKeyCommand(cmdRight);
-
-        if (buttonMode == BUTTONS_NONE) {
-            return htmlPanel;
-        }
-
-        Container controls = new Container(new BoxLayout(BoxLayout.Y_AXIS));
-        controls.add(htmlPanel);
-
-        switch (buttonMode) {
-        case BUTTONS_SHOW:
-            if (showButtons == null) {
-                showButtons = makeShowButtons(cmdLeft, cmdRight);
-            }
-            controls.add(showButtons);
-            break;
-
-        case BUTTONS_GRADE:
-            if (gradeButtons == null) {
-                gradeButtons = makeGradeButtons(cmdLeft, cmdRight);
-            }
-            controls.add(gradeButtons);
-            break;
-        }
-
-        Panel outer = new Panel(controls, Panel.NO_SCROLLBAR, true);
-        outer.setCommandListener(this);
-        outer.setKeyListener(this);
-        outer.setLeftSoftKeyCommand(cmdLeft);
-        outer.setRightSoftKeyCommand(cmdRight);
-
-        outer.scrollPanel = htmlPanel;
-        return outer;
     }
 
     public void setCard(Card card, int numLeft)
@@ -403,92 +211,15 @@ public class FireMIDlet
                          cmdExit, this);
     }
 
-    private void addStatRow(StringBuffer msg, String name, String stat)
+    void showStats()
     {
-        msg.append("<tr><td>");
-        msg.append(name);
-        msg.append("</td><td>");
-        msg.append(stat);
-        msg.append("</td></tr>");
-    }
+        Panel statsPanel = (Panel)new StatsPanel(curCard, carddb, config);
 
-    private void addStatRow(StringBuffer msg, String name, int stat)
-    {
-        addStatRow(msg, name, Integer.toString(stat));
-    }
-
-    private void addStatRow(StringBuffer msg, String name, float stat)
-    {
-        addStatRow(msg, name, Float.toString(stat));
-    }
-
-    private void addStatRow(StringBuffer msg, String name, long stat)
-    {
-        addStatRow(msg, name, Long.toString(stat));
-    }
-
-    private void futureScheduleText(StringBuffer r)
-    {
-        int[] indays = carddb.getFutureSchedule();
-        if (indays == null) {
-            return;
-        }
-
-        r.append("<table>");
-        r.append("<tr><td>" + forDaysText + ":</td><td/></tr>");
-        for (int i=0; i < indays.length; ++i) {
-            r.append("<tr><td>");
-            r.append(inText);
-            r.append(" ");
-            r.append(i + 1);
-            r.append(" ");
-            r.append(daysText);
-            r.append(": </td><td>");
-            r.append(indays[i]);
-            r.append("</td></tr>");
-        }
-        r.append("</table>");
-    }
-
-    void showStats(int returnTo)
-    {
-        int daysLeft = carddb.daysLeft();
-        StringBuffer msg = new StringBuffer("<body><p>");
-
-        if (daysLeft < 0) {
-            msg.append(updateOverdueText);
-        } else if (daysLeft == 0) {
-            msg.append(updateTodayText);
-        } else {
-            futureScheduleText(msg);
-        }
-
-        if (curCard != null) {
-            msg.append("<br/><br/><table>");
-            addStatRow(msg, gradeText + ": ", curCard.grade);
-            addStatRow(msg, easinessText + ": ", curCard.feasiness());
-            addStatRow(msg, repetitionsText + ": ", curCard.repetitions());
-            addStatRow(msg, lapsesText + ": ", curCard.lapses);
-            addStatRow(msg, daysSinceLastText + ": ",
-                curCard.daysSinceLastRep(carddb.days_since_start));
-            addStatRow(msg, daysUntilNextText + ": ",
-                curCard.daysUntilNextRep(carddb.days_since_start));
-            msg.append("</table>");
-        }
-
-        msg.append("<br/><br/><table>");
-        addStatRow(msg, cardsdirText, config.cardpath);
-        addStatRow(msg, freeMemoryText, rt.freeMemory());
-        addStatRow(msg, totalMemoryText, rt.totalMemory());
-        msg.append("</table></p></body>");
-
-        Panel statPanel = makeDisplay(makePage(msg.toString()), BUTTONS_NONE,
-                                       null, cmdReshow);
-
-        if (statPanel != null) {
-            statPanel.setRightSoftKeyCommand(cmdReshow);
-            statPanel.setLabel(statisticsText);
-            screen.setCurrent(statPanel);
+        if (statsPanel != null) {
+            statsPanel.setRightSoftKeyCommand(cmdReshow);
+            statsPanel.setCommandListener(this);
+            statsPanel.setKeyListener(this);
+            screen.setCurrent(statsPanel);
         }
     }
 
@@ -525,12 +256,10 @@ public class FireMIDlet
     void showQuestionScreen()
     {
         if (currentCard != null) {
-            currentPanel = makeDisplay(makePage(makeCardHtml(false).toString()),
-                                        BUTTONS_SHOW, cmdShow, cmdExit);
-            currentPanel.setLeftSoftKeyCommand(cmdShow);
-            currentPanel.setRightSoftKeyCommand(cmdExit);
-            currentPanel.setKeyListener(this);
-            currentPanel.setLabel(currentTitle);
+            currentPanel = (Panel)new CardPanel(
+                curCard, true, currentTitle,
+                config, this, this,
+                cmdShow, cmdExit, cmdButton);
             screen.setCurrent(currentPanel);
             current = QUESTION;
         } else {
@@ -540,12 +269,10 @@ public class FireMIDlet
 
     void showAnswerScreen()
     {
-        currentPanel = makeDisplay(makePage(makeCardHtml(true).toString()),
-                                  BUTTONS_GRADE, null, cmdExit);
-        currentPanel.setRightSoftKeyCommand(cmdExit);
-        currentPanel.setKeyListener(this);
-        currentPanel.setLabel(currentTitle);
-
+        currentPanel = (Panel)new CardPanel(
+            curCard, false, currentTitle,
+            config, this, this,
+            null, cmdExit, cmdButton);
         screen.setCurrent(currentPanel);
         current = ANSWER;
     }
@@ -581,7 +308,6 @@ public class FireMIDlet
         try {
             Panel panel = (Panel)screen.getCurrent();
             panel.screenSizeChanged(newWidth, newHeight);
-            panel.repaint();
 
         } catch (ClassCastException e) {
             System.out.println("!!!Exception: " + e.toString()); // XXX
@@ -591,25 +317,8 @@ public class FireMIDlet
             try {
                 Panel panel = (Panel)currentPanel;
                 panel.screenSizeChanged(newWidth, newHeight);
-                panel.repaint();
             } catch (ClassCastException e) {
                 System.out.println("!!!Exception: " + e.toString()); // XXX
-            }
-        }
-
-        if (gradeButtons != null) {
-            int[] size = gradeButtons.getPrefSize();
-            if ((size != null) && (size[1] >= 0)) {
-                gradeButtons.setPrefSize(FireScreen.getScreen().getWidth(),
-                                         size[1]);
-            }
-        }
-
-        if (showButtons != null) {
-            int[] size = showButtons.getPrefSize();
-            if ((size != null) && (size[1] >= 0)) {
-                showButtons.setPrefSize(FireScreen.getScreen().getWidth(),
-                                        size[1]);
             }
         }
     }
@@ -648,7 +357,7 @@ public class FireMIDlet
                 showNextQuestion();
 
             } else if (showStatsText.equals(val)) {
-                showStats(current);
+                showStats();
 
             } else {
                 try {
@@ -739,7 +448,7 @@ public class FireMIDlet
                 showNextQuestion();
 
             } else if (code == config.statKey) {
-                showStats(QUESTION);
+                showStats();
             }
             break;
 
@@ -758,7 +467,7 @@ public class FireMIDlet
                 showNextQuestion();
 
             } else if (code == config.statKey) {
-                showStats(ANSWER);
+                showStats();
             }
         
         default:
