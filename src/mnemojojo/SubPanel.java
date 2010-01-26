@@ -167,10 +167,10 @@ class SubPanel
     {
         int titleWidth = (int)(titleFont.stringWidth(maxFieldRowTitle));
         int valueWidth = (int)(textFont.stringWidth(maxFieldRowText));
-        boolean doubleLine = (titleWidth + valueWidth < screenWidth);
+        boolean doubleLine = (titleWidth + valueWidth > screenWidth);
 
         Container row = new Container(
-            new BoxLayout(doubleLine?BoxLayout.X_AXIS : BoxLayout.Y_AXIS));
+            new BoxLayout(doubleLine?BoxLayout.Y_AXIS : BoxLayout.X_AXIS));
         
         TextComponent titleCmp = new TextComponent(title + ":", titleWidth);
         titleCmp.setFont(titleFont);
