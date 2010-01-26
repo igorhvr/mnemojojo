@@ -61,7 +61,7 @@ public class AboutPanel
     protected final static String sm2Text = "SM2 Alg.";
     protected final static String fireguiText = "Fire UI";
 
-    protected final static String configTitleText = "Configuration Options";
+    protected final static String configTitleText = "Configuration";
     protected final static String changeCardsText= "Change card directory";
     protected final static String touchscreenText= "Show touchscreen buttons";
     protected final static String leftrightText="Configure command keys";

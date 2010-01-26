@@ -41,7 +41,7 @@ public class Configuration
 
     public boolean isBigScreen = false;
 
-    private static final String writingConfigText = "Writing configuration...";
+    private static final String writingConfigText = "Writing configuration";
 
     // for example: 640x480=307200, 480x800=384000
     private static final long bigScreenPixels = 300000;

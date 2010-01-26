@@ -37,7 +37,7 @@ class CardDirPanel
     extends SubPanel
 {
     public static final String carddirTitle = "Select card directory";
-    protected static final String lookingText = "Searching for cards...";
+    protected static final String lookingText = "Searching for cards";
     protected static final String autoText = "Full automatic search";
     protected static final String manualText = "Browse manually";
 

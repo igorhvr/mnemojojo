@@ -59,6 +59,9 @@ class SubPanel
     protected static int radioWidth;
     protected static int radioHeight;
 
+    public static String maxFieldRowTitle = "Mnemosyne: ";
+    public static String maxFieldRowText = "Pashalis Padeleris";
+
     protected int screenWidth;
     protected final int controlGap = 10;
     protected final int edgeGap = 10;
@@ -126,7 +129,7 @@ class SubPanel
 
     public int columnWidth(int screenWidth)
     {
-        return ((screenWidth - edgeGap) * 8 / 10); // 80%
+        return ((screenWidth - edgeGap) * 9 / 10); // 90%
     }
 
     protected void exitPanel(Command cmd)
@@ -162,9 +165,12 @@ class SubPanel
 
     protected Container fieldRow(String title, String text)
     {
-        Container row = new Container(new BoxLayout(BoxLayout.X_AXIS));
+        int titleWidth = (int)(titleFont.stringWidth(maxFieldRowTitle));
+        int valueWidth = (int)(textFont.stringWidth(maxFieldRowText));
+        boolean doubleLine = (titleWidth + valueWidth < screenWidth);
 
-        int titleWidth = (int)(titleFont.stringWidth("Mnemosyne: "));
+        Container row = new Container(
+            new BoxLayout(doubleLine?BoxLayout.X_AXIS : BoxLayout.Y_AXIS));
         
         TextComponent titleCmp = new TextComponent(title + ":", titleWidth);
         titleCmp.setFont(titleFont);
@@ -178,7 +184,7 @@ class SubPanel
 
         row.add(titleCmp);
         row.add(textCmp);
-        row.setPrefSize(screenWidth, titleFontHeight);
+        row.setPrefSize(screenWidth, titleFontHeight * (doubleLine?2:1));
 
         return row;
     }
@@ -304,7 +310,7 @@ class SubPanel
 
         TextComponent title = new TextComponent("  " + text,
                                 width - radioWidth);
-        title.setFont(labelFont);
+        title.setFont(textFont);
         title.setLayout(FireScreen.LEFT | FireScreen.VCENTER);
         title.validate();
 
