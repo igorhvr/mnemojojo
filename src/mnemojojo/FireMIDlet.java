@@ -368,7 +368,13 @@ public class FireMIDlet
 
         if (current == ABOUT) {
             // Save the settings on both Ok and Exit
-            AboutPanel aboutPanel = (AboutPanel)c;
+            AboutPanel aboutPanel;
+            try {
+                aboutPanel = (AboutPanel)c;
+            } catch (ClassCastException e) {
+                // Ok to a dialog box (e.g. no new cards to review)
+                return;
+            }
 
             if (aboutPanel.dirty) {
                 config.cardpath = aboutPanel.cardpath;
