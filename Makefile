@@ -14,7 +14,7 @@ WTKDEVICE=DefaultColorPhone
 JAVAFILESYS=$(HOME)/j2mewtk/$(WTKVERSION)/appdb/$(WTKDEVICE)/filesystem
 
 # Mnemogogo library
-MNEMOGOGO=$(HOME)/.mnemosyne/plugins/mnemogogo/mnemogogo-j2me-0.9.10.jar
+MNEMOGOGO=$(HOME)/.mnemosyne/plugins/mnemogogo/mnemogogo-j2me-1.0.0.jar
 
 # Microemulator installation
 MICROEMU=/opt/microemulator
