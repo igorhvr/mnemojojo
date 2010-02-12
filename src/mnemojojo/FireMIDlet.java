@@ -273,6 +273,7 @@ public class FireMIDlet
 
     void showAnswerScreen()
     {
+        pauseThinking();
         currentPanel = (Panel)new CardPanel(
             curCard, false, currentTitle,
             config, this, this,
