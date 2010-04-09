@@ -72,6 +72,7 @@ public class FireMIDlet
     HttpClient httpClient;
     Browser browser;
     FireScreen screen;
+    SoundPlayer player;
 
     Panel currentPanel;
     Card currentCard;
@@ -251,6 +252,7 @@ public class FireMIDlet
         }
         aboutPanel.keys[i++] = config.statKey;
         aboutPanel.keys[i++] = config.skipKey;
+        aboutPanel.keys[i++] = config.replayKey;
 
         current = ABOUT;
         screen.setCurrent(aboutPanel);
@@ -274,6 +276,7 @@ public class FireMIDlet
     void showAnswerScreen()
     {
         pauseThinking();
+        queueAnswerSounds();
         currentPanel = (Panel)new CardPanel(
             curCard, false, currentTitle,
             config, this, this,
@@ -285,7 +288,7 @@ public class FireMIDlet
     private void showNextQuestion()
     {
         if (nextQuestion()) {
-            //System.out.println(carddb.toString());
+            queueQuestionSounds();
             showQuestionScreen();
             startThinking();
         } else {
@@ -302,6 +305,20 @@ public class FireMIDlet
                                      fontsize);
         theme.setFontProperty("xhtml.font", new_font);
         screen.setTheme(theme);
+    }
+
+    protected void queueQuestionSounds()
+    {
+        if (curCard != null && player != null) {
+            player.queue(curCard.getQuestionSounds());
+        }
+    }
+
+    protected void queueAnswerSounds()
+    {
+        if (curCard != null && player != null) {
+            player.queue(curCard.getAnswerSounds());
+        }
     }
 
     /* FireListener methods */
@@ -392,6 +409,7 @@ public class FireMIDlet
                 }
                 config.statKey = aboutPanel.keys[i++];
                 config.skipKey = aboutPanel.keys[i++];
+                config.replayKey = aboutPanel.keys[i++];
 
                 config.leftSoftKey = screen.leftSoftKey;
                 config.rightSoftKey = screen.rightSoftKey;
@@ -409,7 +427,7 @@ public class FireMIDlet
 
             } else {
                 loadCards();
-                //carddb.dumpCards();
+                player = new SoundPlayer(config.cardpath);
                 showNextQuestion();
                 checkExportTime();
             }
@@ -454,6 +472,9 @@ public class FireMIDlet
 
             } else if (code == config.statKey) {
                 showStats();
+
+            } else if (code == config.replayKey) {
+                queueQuestionSounds();
             }
             break;
 
@@ -473,6 +494,10 @@ public class FireMIDlet
 
             } else if (code == config.statKey) {
                 showStats();
+
+            } else if (code == config.replayKey) {
+                queueQuestionSounds();
+                queueAnswerSounds();
             }
         
         default:

@@ -112,9 +112,10 @@ abstract class Core
         }
 
         try {
+            carddb.removeFromFutureSchedule(curCard);
             curCard.gradeCard(carddb.days_since_start,
                 grade, thinking_msecs, carddb.logfile);
-            carddb.updateFutureSchedule(curCard);
+            carddb.addToFutureSchedule(curCard);
             return true;
 
         } catch (IOException e) {

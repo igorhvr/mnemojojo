@@ -39,6 +39,7 @@ public class Configuration
     public int gradeKey[];
     public int skipKey;
     public int statKey;
+    public int replayKey;
     public int fontSize;
     public int cardsToLoad;
     public boolean centerText;
@@ -160,6 +161,13 @@ public class Configuration
             statKey = Integer.parseInt(v);
         }
 
+        v = readRecord("replay_key");
+        if (v == null) {
+            replayKey = FireScreen.KEY_NUM7;
+        } else {
+            replayKey = Integer.parseInt(v);
+        }
+
         v = readRecord("font_size");
         if (v == null) {
             fontSize = Font.SIZE_SMALL;
@@ -184,7 +192,7 @@ public class Configuration
 
     public void save(Progress progress)
     {
-        progress.startOperation(10 + gradeKey.length, writingConfigText);
+        progress.startOperation(11 + gradeKey.length, writingConfigText);
 
         writeRecord("cardpath", cardpath);
         progress.updateOperation(1);
@@ -214,6 +222,9 @@ public class Configuration
         writeRecord("stat_key", Integer.toString(statKey));
         progress.updateOperation(1);
 
+        writeRecord("replay_key", Integer.toString(replayKey));
+        progress.updateOperation(1);
+
         writeRecord("font_size", Integer.toString(fontSize));
         progress.updateOperation(1);
 
@@ -228,7 +239,10 @@ public class Configuration
 
     public boolean catchKey(int keyCode)
     {
-        if ((keyCode == skipKey) || (keyCode == statKey)) {
+        if (   (keyCode == skipKey)
+            || (keyCode == statKey) 
+            || (keyCode == replayKey))
+        {
             return true;
         }
 

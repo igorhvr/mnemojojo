@@ -44,7 +44,8 @@ class MapKeysPanel
             "assign grade 4",
             "assign grade 5",
             "show statistics",
-            "skip a card"
+            "skip a card",
+            "replay sounds"
         };
     public int currentKey = 0;
     public int numKeys;
