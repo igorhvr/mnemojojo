@@ -40,8 +40,10 @@ public class SoundPlayer
     {
         try {
             for (int i = 0; i < sounds.length; ++i) {
-                // add a brief gap between sounds
-                queue.addElement(null);
+                if (!queue.isEmpty()) {
+                    // add a brief gap between sounds
+                    queue.addElement(null);
+                }
                 queue.addElement(sounds[i]);
             }
 
