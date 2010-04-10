@@ -41,7 +41,7 @@ abstract class Core
     Progress progressHandler;
 
     // Messages
-    protected static final String versionInfo = "Mnemojojo 1.1.0";
+    protected static final String versionInfo = "Mnemojojo 1.2.0";
 
     protected static final String reviewTitle = "Review Cards";
     protected static final String openTitle = "Open Cards";
