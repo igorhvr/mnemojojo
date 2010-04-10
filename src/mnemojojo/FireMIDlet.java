@@ -82,6 +82,7 @@ public class FireMIDlet
 
     Command cmdOk;
     Command cmdExit;
+    Command cmdLearnAhead;
     Command cmdShow;
     Command cmdShowQ;
     Command cmdShowA;
@@ -129,6 +130,7 @@ public class FireMIDlet
 
         cmdOk = new Command(okText, Command.OK, 1); 
         cmdExit = new Command(exitText, Command.EXIT, 5);
+        cmdLearnAhead = new Command("invisible", Command.OK, 1);
         cmdShow = new Command(showText, Command.ITEM, 1);
         cmdShowQ = new Command(closeText, Command.ITEM, 1);
         cmdShowA = new Command(closeText, Command.ITEM, 1);
@@ -210,11 +212,17 @@ public class FireMIDlet
 
     void showDone()
     {
-        String msg = doneText;
-        screen.showAlert(msg,
-                         gr.fire.ui.Alert.TYPE_INFO,
-                         gr.fire.ui.Alert.USER_SELECTED_OK,
-                         cmdExit, this);
+        if (carddb.canLearnAhead()) {
+            screen.showAlert(askLearnAheadText,
+                             gr.fire.ui.Alert.TYPE_YESNO,
+                             gr.fire.ui.Alert.USER_SELECTED_NO,
+                             cmdLearnAhead, this);
+        } else {
+            screen.showAlert(doneText,
+                             gr.fire.ui.Alert.TYPE_INFO,
+                             gr.fire.ui.Alert.USER_SELECTED_OK,
+                             cmdExit, this);
+        }
     }
 
     void showStats()
@@ -383,6 +391,19 @@ public class FireMIDlet
                 } catch (NumberFormatException e) { }
             }
 
+        } else if (cmd.equals(cmdLearnAhead)) {
+            gr.fire.ui.Alert alert = (gr.fire.ui.Alert) c;
+            switch (alert.getUserSelection()) {
+            case gr.fire.ui.Alert.USER_SELECTED_YES:
+                carddb.learnAhead();
+                showNextQuestion();
+                break;
+
+            case gr.fire.ui.Alert.USER_SELECTED_NO:
+                destroyApp(true);
+                break;
+            }
+            return;
         }
 
         if (current == ABOUT) {

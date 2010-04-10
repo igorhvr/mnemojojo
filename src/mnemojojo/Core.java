@@ -52,6 +52,7 @@ abstract class Core
     protected static final String nocardsTitle = "No cards";
 
     protected static final String exitText = "Exit";
+    protected static final String learnAheadText = "Learn ahead";
     protected static final String okText = "Ok";
     protected static final String aboutText = "About";
     protected static final String openText = "Open";
@@ -65,6 +66,9 @@ abstract class Core
     protected static final String closeText = "Close";
     protected static final String doneText
             = "There are no new cards to review.";
+    protected static final String askLearnAheadText
+            = doneText
+              + " Would you like to learn ahead of the schedule?";
     protected static final String selectCarddir
             = "A card directory must be set before starting.";
     protected static final String notEnoughMemoryToLoadText
