@@ -186,6 +186,15 @@ public class CardPanel
             html.append(question);
         }
 
+        if (config.showButtons &&
+            ((!(includeAnswer && card.getOverlay()) && card.hasQuestionSounds())
+             || (includeAnswer && card.hasAnswerSounds())))
+        {
+            html.append("<br/><form>");
+            html.append("<input type=\"submit\" value=\"Replay sounds\"/>");
+            html.append("</form>");
+        }
+
         if (config.centerText) {
             html.append("</center>");
         }

@@ -123,6 +123,7 @@ public class FireMIDlet
 
         httpClient = new HttpClient(new FireConnector());
         browser = new Browser(httpClient);
+        browser.setListener(this);
         CardPanel.browser = browser;
         StatsPanel.browser = browser;
 
@@ -438,6 +439,18 @@ public class FireMIDlet
         } else if (label.equals(exitText)) {
             saveCards();
             notifyDestroyed();
+
+        } else if (label.equals("form")) {
+            InputComponent src = (InputComponent) c;
+
+            if ("Replay sounds".equals(src.getValue())) {
+                if (!curCard.getOverlay()) {
+                    queueQuestionSounds();
+                }
+                if (current == ANSWER) {
+                    queueAnswerSounds();
+                }
+            }
         }
     }
 
@@ -496,7 +509,9 @@ public class FireMIDlet
                 showStats();
 
             } else if (code == config.replayKey) {
-                queueQuestionSounds();
+                if (!curCard.getOverlay()) {
+                    queueQuestionSounds();
+                }
                 queueAnswerSounds();
             }
         

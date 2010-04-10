@@ -79,6 +79,11 @@ public class SoundPlayer
                 mp = Manager.createPlayer(base_path + sound);
             }
 
+            if (mp == null) {
+                startPlaying();
+                return;
+            }
+
             mp.addPlayerListener(this);
             mp.start();
 
