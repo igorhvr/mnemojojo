@@ -38,13 +38,17 @@ public class SoundPlayer
 
     public void queue(String[] sounds)
     {
-        for (int i = 0; i < sounds.length; ++i) {
-            // add a brief gap between sounds
-            queue.addElement(null);
-            queue.addElement(sounds[i]);
-        }
+        try {
+            for (int i = 0; i < sounds.length; ++i) {
+                // add a brief gap between sounds
+                queue.addElement(null);
+                queue.addElement(sounds[i]);
+            }
 
-        startPlaying();
+            startPlaying();
+        } catch (OutOfMemoryError e) {
+            queue.removeAllElements();
+        }
     }
 
     public void clear()
@@ -94,6 +98,9 @@ public class SoundPlayer
             startPlaying();
             return;
         } catch (SecurityException e) {
+            return;
+        } catch (OutOfMemoryError e) {
+            queue.removeAllElements();
             return;
         }
     }
