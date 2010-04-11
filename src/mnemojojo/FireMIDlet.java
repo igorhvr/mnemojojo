@@ -102,6 +102,7 @@ public class FireMIDlet
     public FireMIDlet()
     {
         Log.showDebug = debug;
+        // FindCardDirJ2ME.debug = true;
 
         display = Display.getDisplay(this);
 
