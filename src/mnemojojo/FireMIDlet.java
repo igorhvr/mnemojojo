@@ -18,29 +18,20 @@
 
 package mnemojojo;
 
-import java.lang.*;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import javax.microedition.io.Connector;
-import javax.microedition.io.HttpConnection;
 import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
-import javax.microedition.midlet.MIDlet;
 import javax.microedition.midlet.MIDletStateChangeException;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
-import javax.microedition.lcdui.Alert;
-import javax.microedition.lcdui.AlertType;
-import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.Font;
 
 import mnemogogo.mobile.hexcsv.Card;
+import mnemogogo.mobile.hexcsv.Debug;
 import mnemogogo.mobile.hexcsv.FindCardDirJ2ME;
 import mnemogogo.mobile.hexcsv.Progress;
 
 import gr.fire.browser.Browser;
-import gr.fire.browser.util.Page;
 import gr.fire.ui.FireTheme;
 import gr.fire.core.FireScreen;
 import gr.fire.core.KeyListener;
@@ -51,9 +42,6 @@ import gr.fire.util.FireConnector;
 import gr.fire.core.FireListener;
 
 // for buttons:
-import gr.fire.core.BoxLayout;
-import gr.fire.core.Container;
-import gr.fire.core.GridLayout;
 import gr.fire.ui.InputComponent;
 
 public class FireMIDlet
@@ -92,12 +80,9 @@ public class FireMIDlet
     private final boolean debug = false;
 
     private int current;
-    private final int CARD_DIRS = 0;
     private final int ABOUT = 1;
     private final int QUESTION = 2;
     private final int ANSWER = 3;
-    private final int WAIT = 4;
-    private final int KEYMAP = 5;
 
     public FireMIDlet()
     {
@@ -112,9 +97,9 @@ public class FireMIDlet
         screen.setFullScreenMode(true);
         try {
             if (config.isBigScreen) {
-                screen.setTheme(new FireTheme("file://hires.properties"));
+                FireScreen.setTheme(new FireTheme("file://hires.properties"));
             } else {
-                screen.setTheme(new FireTheme("file://normal.properties"));
+                FireScreen.setTheme(new FireTheme("file://normal.properties"));
             }
         } catch (Exception e) {}
 
@@ -144,10 +129,10 @@ public class FireMIDlet
     {
         if (!initialized) {
             if (config.leftSoftKey != 0) {
-                screen.leftSoftKey = config.leftSoftKey;
+                FireScreen.leftSoftKey = config.leftSoftKey;
             }
             if (config.rightSoftKey != 0) {
-                screen.rightSoftKey = config.rightSoftKey;
+                FireScreen.rightSoftKey = config.rightSoftKey;
             }
             showAbout();
             initialized = true;
@@ -159,7 +144,7 @@ public class FireMIDlet
         saveCards();
         super.destroyApp(unconditional);
         screen.destroy();
-        notifyDestroyed();
+        notifyDestroyed(); 
     }
 
     public void setCardDir(String cardpath)
@@ -308,13 +293,13 @@ public class FireMIDlet
 
     public void updateFont(int fontsize)
     {
-        Theme theme = screen.getTheme();
+        Theme theme = FireScreen.getTheme();
         Font cur_font = theme.getFontProperty("xhtml.font");
         Font new_font = Font.getFont(cur_font.getFace(),
                                      cur_font.getStyle(),
                                      fontsize);
         theme.setFontProperty("xhtml.font", new_font);
-        screen.setTheme(theme);
+        FireScreen.setTheme(theme);
     }
 
     protected void queueQuestionSounds()
@@ -434,8 +419,8 @@ public class FireMIDlet
                 config.skipKey = aboutPanel.keys[i++];
                 config.replayKey = aboutPanel.keys[i++];
 
-                config.leftSoftKey = screen.leftSoftKey;
-                config.rightSoftKey = screen.rightSoftKey;
+                config.leftSoftKey = FireScreen.leftSoftKey;
+                config.rightSoftKey = FireScreen.rightSoftKey;
 
                 config.save((Progress)progressGauge);
             }
@@ -478,9 +463,6 @@ public class FireMIDlet
 
     public void commandAction(javax.microedition.lcdui.Command cmd, Displayable dis)
     {
-        String title = dis.getTitle();
-        String label = cmd.getLabel();
-
         if (cmd.equals(cmdShowQ)) {
             showQuestionScreen();
             unpauseThinking();

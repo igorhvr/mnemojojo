@@ -18,7 +18,6 @@
 
 package mnemojojo;
 
-import java.lang.*;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.CommandListener;
@@ -30,8 +29,6 @@ import gr.fire.core.Component;
 import gr.fire.core.Container;
 
 import gr.fire.core.BoxLayout;
-import gr.fire.core.Container;
-import gr.fire.core.GridLayout;
 import gr.fire.ui.InputComponent;
 import gr.fire.ui.TextComponent;
 

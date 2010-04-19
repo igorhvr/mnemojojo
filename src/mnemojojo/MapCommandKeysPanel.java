@@ -18,10 +18,8 @@
 
 package mnemojojo;
 
-import java.lang.*;
 import javax.microedition.lcdui.Command;
 import gr.fire.core.FireScreen;
-import gr.fire.core.Component;
 import gr.fire.core.Container;
 import gr.fire.core.CommandListener;
 import gr.fire.ui.TextComponent;
@@ -47,8 +45,8 @@ class MapCommandKeysPanel
         setLeftSoftKeyCommand(pressCmd);
         showingLeft = true;
 
-        screen.leftSoftKey = 0;
-        screen.rightSoftKey = 0;
+        FireScreen.leftSoftKey = 0;
+        FireScreen.rightSoftKey = 0;
     }
 
     protected void buildPanel()
@@ -61,12 +59,12 @@ class MapCommandKeysPanel
     protected void keyReleased(int keyCode)
     {
         if (showingLeft) {
-            screen.leftSoftKey = keyCode;
+            FireScreen.leftSoftKey = keyCode;
             setLeftSoftKeyCommand(null);
             setRightSoftKeyCommand(pressCmd);
             showingLeft = false;
         } else {
-            screen.rightSoftKey = keyCode;
+            FireScreen.rightSoftKey = keyCode;
             exitPanel();
         }
     }

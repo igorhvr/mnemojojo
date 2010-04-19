@@ -18,15 +18,11 @@
 
 package mnemojojo;
 
-import java.lang.*;
 import javax.microedition.lcdui.Command;
-import javax.microedition.lcdui.Font;
 
 import gr.fire.core.FireScreen;
-import gr.fire.core.Component;
 import gr.fire.core.Container;
 import gr.fire.core.CommandListener;
-import gr.fire.core.Container;
 import gr.fire.core.BoxLayout;
 import gr.fire.ui.TextComponent;
 

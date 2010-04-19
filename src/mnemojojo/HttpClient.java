@@ -18,7 +18,6 @@
 
 package mnemojojo;
 
-import java.lang.*;
 import java.util.Hashtable;
 import java.io.IOException;
 import java.io.InterruptedIOException;

@@ -20,7 +20,6 @@ package mnemojojo;
 
 import mnemogogo.mobile.hexcsv.Progress;
 
-import java.lang.*;
 import javax.microedition.rms.RecordStore;
 import javax.microedition.rms.RecordStoreException;
 import javax.microedition.lcdui.Font;

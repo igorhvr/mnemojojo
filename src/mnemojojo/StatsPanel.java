@@ -18,7 +18,6 @@
 
 package mnemojojo;
 
-import java.lang.*;
 import java.io.ByteArrayInputStream;
 
 import mnemogogo.mobile.hexcsv.HexCsvJ2ME;

@@ -18,7 +18,6 @@
 
 package mnemojojo;
 
-import java.lang.*;
 import java.util.Date;
 import java.io.IOException;
 import mnemogogo.mobile.hexcsv.HexCsvJ2ME;

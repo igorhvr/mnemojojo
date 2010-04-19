@@ -18,16 +18,10 @@
 
 package mnemojojo;
 
-import java.lang.*;
-
 import mnemogogo.mobile.hexcsv.Progress;
 
-import gr.fire.ui.FireTheme;
 import gr.fire.core.FireScreen;
-import gr.fire.core.Component;
 import gr.fire.ui.ProgressbarAnimation;
-
-import javax.microedition.lcdui.Font;
 
 public class ProgressGauge
     implements Progress

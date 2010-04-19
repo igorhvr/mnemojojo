@@ -18,21 +18,17 @@
 
 package mnemojojo;
 
-import java.lang.*;
 import java.util.Vector;
 import java.util.Enumeration;
 
 import javax.microedition.lcdui.Command;
-import javax.microedition.lcdui.Font;
 import javax.microedition.io.file.FileSystemRegistry;
 
 import gr.fire.core.FireScreen;
 import gr.fire.core.Component;
 import gr.fire.core.Container;
 import gr.fire.core.CommandListener;
-import gr.fire.core.Container;
 import gr.fire.core.BoxLayout;
-import gr.fire.ui.TextComponent;
 import gr.fire.ui.InputComponent;
 
 import mnemogogo.mobile.hexcsv.FindCardDirJ2ME;

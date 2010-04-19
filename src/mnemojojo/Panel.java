@@ -18,7 +18,6 @@
 
 package mnemojojo;
 
-import java.lang.*;
 import gr.fire.core.FireScreen;
 import gr.fire.core.Container;
 import javax.microedition.lcdui.Canvas;

@@ -18,8 +18,6 @@
 
 package mnemojojo;
 
-import java.lang.*;
-import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.Font;
