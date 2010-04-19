@@ -80,9 +80,12 @@ public class FireMIDlet
     private final boolean debug = false;
 
     private int current;
-    private final int ABOUT = 1;
-    private final int QUESTION = 2;
-    private final int ANSWER = 3;
+    private static final int ABOUT = 1;
+    private static final int QUESTION = 2;
+    private static final int ANSWER = 3;
+
+    /* BlackBerry */
+    public static final boolean blackberry = false;
 
     public FireMIDlet()
     {
@@ -96,7 +99,9 @@ public class FireMIDlet
 
         screen.setFullScreenMode(true);
         try {
-            if (config.isBigScreen) {
+            if (blackberry) {
+                FireScreen.setTheme(new FireTheme("file://res/blackberry.properties"));
+            } else if (config.isBigScreen) {
                 FireScreen.setTheme(new FireTheme("file://hires.properties"));
             } else {
                 FireScreen.setTheme(new FireTheme("file://normal.properties"));
@@ -562,6 +567,16 @@ public class FireMIDlet
     }
 
     public boolean keyUp(int keycode, int time) {
+        /* BlackBerry */
+        /*
+        int keypad = net.rim.device.api.ui.Keypad.key(keycode);
+
+        if (keypad == net.rim.device.api.ui.Keypad.KEY_MENU) {
+            return true;
+        } else if (keypad == net.rim.device.api.ui.Keypad.KEY_ESCAPE) {
+            return true;
+        }
+        */
         return false;
     }
 }

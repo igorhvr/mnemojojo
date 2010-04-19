@@ -111,7 +111,12 @@ public class AboutPanel
 
         // title image
         try {
-            Image img = Image.createImage("/mnemosyne.png");
+            Image img;
+            if (FireMIDlet.blackberry) {
+            	img = Image.createImage("/res/mnemosyne.png");
+            } else {
+            	img = Image.createImage("/mnemosyne.png");
+            }
             ImageComponent imgCmp = new ImageComponent(img, "");
             imgCmp.setLayout(FireScreen.VCENTER | FireScreen.CENTER);
             imgCmp.setPrefSize(img.getWidth(), img.getHeight() + 15);

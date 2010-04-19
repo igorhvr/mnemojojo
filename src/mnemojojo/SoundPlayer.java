@@ -29,10 +29,14 @@ public class SoundPlayer
     private String base_path;
     private Vector queue = new Vector(6, 2);
     private Player mp = null;
+	private String silence_path = "/silence.wav";
 
     public SoundPlayer(String path)
     {
         base_path = path;
+        if (FireMIDlet.blackberry) {
+        	silence_path = "/res/silence.wav";
+        }
     }
 
     public void queue(String[] sounds)
@@ -77,7 +81,7 @@ public class SoundPlayer
 
         try {
             if (sound == null) {
-                InputStream is = getClass().getResourceAsStream("/silence.wav");
+                InputStream is = getClass().getResourceAsStream(silence_path);
                 mp = Manager.createPlayer(is, "audio/X-wav");
 
             } else {
