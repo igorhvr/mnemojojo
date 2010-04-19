@@ -27,7 +27,6 @@ import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Font;
 
 import mnemogogo.mobile.hexcsv.Card;
-import mnemogogo.mobile.hexcsv.Debug;
 import mnemogogo.mobile.hexcsv.FindCardDirJ2ME;
 import mnemogogo.mobile.hexcsv.Progress;
 
@@ -49,6 +48,7 @@ public class FireMIDlet
     implements CommandListener,
                gr.fire.core.CommandListener,
                KeyListener,
+               // net.rim.device.api.system.KeyListener, /* BlackBerry */
                FireListener
 {
     boolean initialized = false;
@@ -104,6 +104,8 @@ public class FireMIDlet
         } catch (Exception e) {}
 
         screen.setFireListener(this);
+        // net.rim.device.api.system.Application.getApplication().addKeyListener(this); /* BlackBerry */
+
 
         progressGauge = new ProgressGauge();
         progressHandler = (Progress)progressGauge;
@@ -526,5 +528,41 @@ public class FireMIDlet
 
     public void keyRepeated(int code, Component src) {  }
     public void keyPressed(int code, Component src) { }
+
+    /* Blackberry specific */
+    /* Interface: net.rim.device.api.system.KeyListener */
+    public boolean keyChar(char key, int status, int time) {
+        return false;
+    }
+
+    public boolean keyDown(int keycode, int time)
+    {
+        /* BlackBerry */
+        /*
+        int keypad = net.rim.device.api.ui.Keypad.key(keycode);
+
+        if (keypad == net.rim.device.api.ui.Keypad.KEY_MENU) {
+            screen.triggerLeftSoftKey();
+            return true;
+        } else if (keypad == net.rim.device.api.ui.Keypad.KEY_ESCAPE) {
+            screen.triggerRightSoftKey();
+            return true;
+        }
+        */
+
+        return false;
+    }
+
+    public boolean keyRepeat(int keycode, int time) {
+        return false;
+    }
+
+    public boolean keyStatus(int keycode, int time) {
+        return false;
+    }
+
+    public boolean keyUp(int keycode, int time) {
+        return false;
+    }
 }
 
