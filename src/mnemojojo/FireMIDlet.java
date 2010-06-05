@@ -64,6 +64,7 @@ public class FireMIDlet
 
     Panel currentPanel;
     Card currentCard;
+    boolean answerPlayed = false;
     String currentTitle;
 
     ProgressGauge progressGauge;
@@ -293,6 +294,7 @@ public class FireMIDlet
     private void showNextQuestion()
     {
         if (nextQuestion()) {
+            answerPlayed = false;
             if (config.autoPlay) {
                 queueQuestionSounds();
             }
@@ -323,6 +325,7 @@ public class FireMIDlet
 
     protected void queueAnswerSounds()
     {
+        answerPlayed = true;
         if (curCard != null && player != null) {
             player.queue(curCard.getAnswerSounds());
         }
@@ -464,7 +467,9 @@ public class FireMIDlet
             InputComponent src = (InputComponent) c;
 
             if ("Replay sounds".equals(src.getValue())) {
-                if (!curCard.getOverlay()) {
+                if (!(curCard.getOverlay()
+                      || (current == ANSWER && !config.autoPlay && !answerPlayed)))
+                {
                     queueQuestionSounds();
                 }
                 if (current == ANSWER) {

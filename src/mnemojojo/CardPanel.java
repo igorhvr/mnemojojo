@@ -59,6 +59,8 @@ public class CardPanel
     protected static final String showStatsText = "Stats";
     protected static final String skipCardText = "Skip";
 
+    protected static final String soundMarker = "<img src=\"res://sound.png\"/><br/>";
+
     public CardPanel(Card card,
                      boolean showQuestion,
                      String title,
@@ -165,6 +167,9 @@ public class CardPanel
         String question = card.getQuestion();
         String answer = card.getAnswer();
 
+        boolean qsounds = !(includeAnswer && card.getOverlay()) && card.hasQuestionSounds();
+        boolean asounds = includeAnswer && card.hasAnswerSounds();
+
         if (config.centerText) {
             html.append("<center>");
         }
@@ -174,19 +179,26 @@ public class CardPanel
 
         } else if (includeAnswer) {
             if (!card.getOverlay()) {
+                if (!config.showButtons && qsounds) {
+                    html.append(soundMarker);
+                }
                 html.append(question);
                 html.append("<hr/>");
             }
 
+            if (!config.showButtons && asounds) {
+                html.append(soundMarker);
+            }
             html.append(answer);
 
         } else {
+            if (!config.showButtons && qsounds) {
+                html.append(soundMarker);
+            }
             html.append(question);
         }
 
-        if (config.showButtons &&
-            ((!(includeAnswer && card.getOverlay()) && card.hasQuestionSounds())
-             || (includeAnswer && card.hasAnswerSounds())))
+        if (config.showButtons && (qsounds || asounds))
         {
             html.append("<br/><form>");
             html.append("<input type=\"submit\" value=\"Replay sounds\"/>");

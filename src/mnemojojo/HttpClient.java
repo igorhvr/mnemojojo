@@ -66,7 +66,10 @@ class HttpClient
                IllegalStateException, Exception
     {
         String newurl = url;
-        if (prefix != null) {
+        if (url.startsWith("res://")) {
+            newurl = "file://" + url.substring(6);
+
+        } else if (prefix != null) {
             newurl = prefix + url;
         }
 
