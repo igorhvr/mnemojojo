@@ -29,13 +29,13 @@ public class SoundPlayer
     private String base_path;
     private Vector queue = new Vector(6, 2);
     private Player mp = null;
-	private String silence_path = "/silence.wav";
+        private String silence_path = "/silence.wav";
 
     public SoundPlayer(String path)
     {
         base_path = path;
         if (FireMIDlet.blackberry) {
-        	silence_path = "/res/silence.wav";
+                silence_path = "/res/silence.wav";
         }
     }
 

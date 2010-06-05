@@ -247,6 +247,7 @@ public class FireMIDlet
         aboutPanel.cardsToLoad = config.cardsToLoad;
         aboutPanel.touchScreen = config.showButtons;
         aboutPanel.centerText = config.centerText;
+        aboutPanel.autoPlay = config.autoPlay;
         int i = 0;
         while (i < 6) {
             aboutPanel.keys[i] = config.gradeKey[i];
@@ -278,7 +279,9 @@ public class FireMIDlet
     void showAnswerScreen()
     {
         pauseThinking();
-        queueAnswerSounds();
+        if (config.autoPlay) {
+            queueAnswerSounds();
+        }
         currentPanel = (Panel)new CardPanel(
             curCard, false, currentTitle,
             config, this, this,
@@ -290,7 +293,9 @@ public class FireMIDlet
     private void showNextQuestion()
     {
         if (nextQuestion()) {
-            queueQuestionSounds();
+            if (config.autoPlay) {
+                queueQuestionSounds();
+            }
             showQuestionScreen();
             startThinking();
         } else {
@@ -417,6 +422,7 @@ public class FireMIDlet
                 }
                 config.showButtons = aboutPanel.touchScreen;
                 config.centerText = aboutPanel.centerText;
+                config.autoPlay = aboutPanel.autoPlay;
                 int i = 0;
                 while (i < 6) {
                     config.gradeKey[i] = aboutPanel.keys[i];

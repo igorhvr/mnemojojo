@@ -42,6 +42,7 @@ public class Configuration
     public int fontSize;
     public int cardsToLoad;
     public boolean centerText;
+    public boolean autoPlay;
 
     public boolean isBigScreen = false;
 
@@ -187,11 +188,18 @@ public class Configuration
         } else {
             centerText = v.equals("true");
         }
+
+        v = readRecord("auto_play");
+        if (v == null) {
+            autoPlay = true;
+        } else {
+            autoPlay = v.equals("true");
+        }
     }
 
     public void save(Progress progress)
     {
-        progress.startOperation(11 + gradeKey.length, writingConfigText);
+        progress.startOperation(12 + gradeKey.length, writingConfigText);
 
         writeRecord("cardpath", cardpath);
         progress.updateOperation(1);
@@ -231,6 +239,9 @@ public class Configuration
         progress.updateOperation(1);
 
         writeRecord("center_text", centerText?"true":"false");
+        progress.updateOperation(1);
+
+        writeRecord("auto_play", autoPlay?"true":"false");
         progress.updateOperation(1);
 
         progress.stopOperation();

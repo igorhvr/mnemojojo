@@ -51,6 +51,7 @@ public class AboutPanel
     protected InputComponent largeRadio;
     protected InputComponent touchscreenCheck;
     protected InputComponent centerTextCheck;
+    protected InputComponent autoPlayCheck;
     protected InputComponent cardstoloadNum;
     protected boolean cardstoloadSet = false;
 
@@ -70,6 +71,7 @@ public class AboutPanel
     protected final static String largeText= "large";
     protected final static String cardsToLoadText= "Cards to load ahead:";
     protected final static String centerTextText= "Center card text";
+    protected final static String autoPlayText= "Play sounds automatically";
     protected final static String nocardpathText
                                 = "(no card directory currently set)";
 
@@ -77,6 +79,7 @@ public class AboutPanel
     public int fontSize = Font.SIZE_SMALL;
     public boolean touchScreen = true;
     public boolean centerText = false;
+    public boolean autoPlay = true;
     public int keys[];
     public String cardpath;
     public int cardsToLoad;
@@ -152,6 +155,7 @@ public class AboutPanel
 
         aboutCnt.add(fontsizeRow());
         centerTextCheck = checkboxRow(centerTextText, aboutCnt);
+        autoPlayCheck = checkboxRow(autoPlayText, aboutCnt);
 
         cardstoloadNum = numberRow(cardsToLoadText, aboutCnt);
 
@@ -191,6 +195,8 @@ public class AboutPanel
         touchscreenCheck.repaint();
         centerTextCheck.setChecked(centerText);
         centerTextCheck.repaint();
+        autoPlayCheck.setChecked(autoPlay);
+        autoPlayCheck.repaint();
 
         if (!cardstoloadSet) {
             cardstoloadNum.setValue(Integer.toString(cardsToLoad));
@@ -234,6 +240,10 @@ public class AboutPanel
 
             } else if (centerTextText.equals(val)) {
                 centerText = !input.isChecked();
+                dirty = true;
+
+            } else if (autoPlayText.equals(val)) {
+                autoPlay = !input.isChecked();
                 dirty = true;
 
             } else if (cardstoloadNum.equals(input)) {
