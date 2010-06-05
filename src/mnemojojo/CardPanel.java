@@ -179,20 +179,20 @@ public class CardPanel
 
         } else if (includeAnswer) {
             if (!card.getOverlay()) {
-                if (!config.showButtons && qsounds) {
+                if (!config.showButtons && !config.autoPlay && qsounds) {
                     html.append(soundMarker);
                 }
                 html.append(question);
                 html.append("<hr/>");
             }
 
-            if (!config.showButtons && asounds) {
+            if (!config.showButtons && !config.autoPlay && asounds) {
                 html.append(soundMarker);
             }
             html.append(answer);
 
         } else {
-            if (!config.showButtons && qsounds) {
+            if (!config.showButtons && !config.autoPlay && qsounds) {
                 html.append(soundMarker);
             }
             html.append(question);
