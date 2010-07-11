@@ -373,7 +373,6 @@ public class FireMIDlet
 
         } else if (cmd.equals(cmdButton)) {
             String val = ((InputComponent)c).getValue();
-            System.out.println("button: " + val);
 
             if (showAnswerText.equals(val)) {
                 showAnswerScreen();
@@ -467,8 +466,8 @@ public class FireMIDlet
             InputComponent src = (InputComponent) c;
 
             if ("Replay sounds".equals(src.getValue())) {
-                if (!(curCard.getOverlay()
-                      || (current == ANSWER && !config.autoPlay && !answerPlayed)))
+                if (!curCard.getOverlay()
+                    && (current != ANSWER || answerPlayed))
                 {
                     queueQuestionSounds();
                 }
@@ -531,7 +530,8 @@ public class FireMIDlet
                 showStats();
 
             } else if (code == config.replayKey) {
-                if (!curCard.getOverlay()) {
+                if (!curCard.getOverlay() && answerPlayed)
+                {
                     queueQuestionSounds();
                 }
                 queueAnswerSounds();
