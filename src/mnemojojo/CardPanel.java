@@ -60,6 +60,7 @@ public class CardPanel
     protected static final String skipCardText = "Skip";
 
     protected static final String soundMarker = "<img src=\"res://sound.png\"/><br/>";
+    //protected static final String soundMarker = "<img src=\"res://res/sound.png\"/><br/>"; /* Blackberry */
 
     public CardPanel(Card card,
                      boolean showQuestion,
