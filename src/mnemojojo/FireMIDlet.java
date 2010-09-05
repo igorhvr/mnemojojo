@@ -79,19 +79,23 @@ public class FireMIDlet
     Command cmdButton;
 
     private final boolean debug = false;
+    private Console console;
 
     private int current;
     private static final int ABOUT = 1;
     private static final int QUESTION = 2;
     private static final int ANSWER = 3;
+    private static final int CONSOLE = 4;
 
     /* BlackBerry */
     public static final boolean blackberry = false;
 
     public FireMIDlet()
     {
-        Log.showDebug = debug;
-        // FindCardDirJ2ME.debug = true;
+        Log.showDebug = false; // low-level fire messages
+        if (debug) {
+            FindCardDirJ2ME.debug = new DebugLog();
+        }
 
         display = Display.getDisplay(this);
 
@@ -130,6 +134,13 @@ public class FireMIDlet
         cmdShowA = new Command(closeText, Command.ITEM, 1);
         cmdReshow = new Command(closeText, Command.ITEM, 1);
         cmdButton = new Command("invisible", Command.OK, 1);
+
+        if (debug) {
+            console = new Console(display, this, cmdExit, 4096);
+            Log.addLogDestination(console);
+            Log.addLogDestination(new DebugFile());
+        }
+
     }
 
     public void startApp()
@@ -237,10 +248,14 @@ public class FireMIDlet
                                         this, cmdOk, cmdExit, config);
 
         // copy across the current configured values
+        Log.logInfo("Checking card directory from settings...");
         if ((config.cardpath != null)
-            && (FindCardDirJ2ME.isCardDir(config.cardpath, null))) {
+            && (FindCardDirJ2ME.isCardDir(config.cardpath, null)))
+        {
+            Log.logInfo("Settings card directory is valid: " + config.cardpath);
             aboutPanel.cardpath = config.cardpath;
         } else {
+            Log.logInfo("Settings does not contain a valid card directory.");
             config.cardpath = null;
             aboutPanel.cardpath = null;
         }
@@ -259,6 +274,7 @@ public class FireMIDlet
         aboutPanel.keys[i++] = config.replayKey;
 
         current = ABOUT;
+        currentPanel = aboutPanel;
         screen.setCurrent(aboutPanel);
         aboutPanel.repaintControls();
     }
@@ -460,7 +476,13 @@ public class FireMIDlet
 
         } else if (label.equals(exitText)) {
             saveCards();
-            notifyDestroyed();
+            if ((console != null) && (current != CONSOLE)) {
+                current = CONSOLE;
+                screen.setCurrent(console);
+                console.print();
+            } else {
+                notifyDestroyed();
+            }
 
         } else if (label.equals("form")) {
             InputComponent src = (InputComponent) c;

@@ -14,7 +14,7 @@ WTKDEVICE=DefaultColorPhone
 JAVAFILESYS=$(HOME)/j2mewtk/$(WTKVERSION)/appdb/$(WTKDEVICE)/filesystem
 
 # Mnemogogo library
-MNEMOGOGO=$(HOME)/.mnemosyne/plugins/mnemogogo/mnemogogo-j2me-1.2.3.jar
+MNEMOGOGO=$(HOME)/.mnemosyne/plugins/mnemogogo/mnemogogo-j2me-1.2.4.jar
 
 # Microemulator installation
 MICROEMU=/opt/microemulator
@@ -23,12 +23,15 @@ MICROEMU=/opt/microemulator
 XSLTPROC=xsltproc
 
 mnemojojo: bin/mnemojojo.jar bin/mnemojojo.jad
+	@echo
+	@echo
 	@echo --Todo items remaining in source:
-	-@grep XXX src/mnemojojo/*.java
-	-@grep TODO src/mnemojojo/*.java
+	@grep XXX src/mnemojojo/*.java || true
+	@grep TODO src/mnemojojo/*.java || true
+	@echo ---------------------------------
 
-zip: bin/mnemojojo.jar bin/mnemojojo.jad version
-	zip bin/mnemojojo-`cat version`.zip \
+zip: bin/mnemojojo.jar bin/mnemojojo.jad version debug
+	zip bin/mnemojojo-`cat version``cat debug`.zip \
 	  --junk-paths --quiet \
 	  bin/mnemojojo.jar \
 	  bin/mnemojojo.jad
@@ -93,6 +96,12 @@ version: src/mnemojojo/Core.java
 	sed -ne 's/.*versionInfo *= *"Mnemojojo \([0-9.]*\)".*/\1/p' src/mnemojojo/Core.java \
 		> version
 
+debug: src/mnemojojo/FireMIDlet.java
+	if grep \
+	    '.*private[ \t]*final[ \t]*boolean[ \t]*debug[ \t]*=[ \t]*true;' \
+	    src/mnemojojo/FireMIDlet.java; \
+	    then echo "-debug" > debug; else echo "" > debug; fi
+
 bin/MANIFEST.MF: version bin
 	@echo "MIDlet-1: Mnemojojo, mnemosyne.png, mnemojojo.FireMIDlet" > bin/MANIFEST.MF
 	@echo "MIDlet-Name: Mnemojojo" >> bin/MANIFEST.MF
@@ -116,7 +125,7 @@ bin:
 	mkdir bin
 
 clean:
-	-@rm version sources 2>/dev/null || true
+	-@rm version debug sources 2>/dev/null || true
 	-@rm bin/MANIFEST.MF bin/mnemojojo.jar bin/mnemojojo.jad 2>/dev/null || true
 	-@rmdir bin 2>/dev/null || true
 	-@find tmpclasses -name '*.class' -delete          2>/dev/null || true

@@ -1,4 +1,5 @@
 bin/
 sources
 version
+debug
 filesystem
