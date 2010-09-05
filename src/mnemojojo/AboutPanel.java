@@ -150,7 +150,9 @@ public class AboutPanel
         aboutCnt.add(cardpathRow);
 
         touchscreenCheck = checkboxRow(touchscreenText, aboutCnt);
-        aboutCnt.add(buttonRow(leftrightText));
+        if (!FireMIDlet.blackberry) {
+            aboutCnt.add(buttonRow(leftrightText));
+        }
         aboutCnt.add(buttonRow(gradingkeysText));
 
         aboutCnt.add(fontsizeRow());
