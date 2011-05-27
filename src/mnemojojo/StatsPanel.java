@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import mnemogogo.mobile.hexcsv.HexCsvJ2ME;
 import mnemogogo.mobile.hexcsv.Card;
 
+import gr.fire.core.FireScreen;
 import gr.fire.browser.Browser;
 import gr.fire.browser.util.Page;
 import gr.fire.core.Container;
@@ -143,7 +144,16 @@ public class StatsPanel
     {
         int daysLeft = carddb.daysLeft();
         StringBuffer msg = new StringBuffer(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<body><p>");
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<body");
+
+        int bg = FireScreen.getTheme().getIntProperty("xhtml.bg.color");
+        if (bg == 0x00000000) {
+            msg.append(" bgcolor=\"black\"");
+        } else if (bg == 0x00FFFFFF) {
+            msg.append(" bgcolor=\"white\"");
+        }
+
+        msg.append("><p>");
 
         if (daysLeft < 0) {
             msg.append(updateOverdueText);

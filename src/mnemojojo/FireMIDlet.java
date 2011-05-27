@@ -104,15 +104,7 @@ public class FireMIDlet
         config.setScreen(screen);
 
         screen.setFullScreenMode(true);
-        try {
-            if (blackberry) {
-                FireScreen.setTheme(new FireTheme("file://res/blackberry.properties"));
-            } else if (config.isBigScreen) {
-                FireScreen.setTheme(new FireTheme("file://hires.properties"));
-            } else {
-                FireScreen.setTheme(new FireTheme("file://normal.properties"));
-            }
-        } catch (Exception e) {}
+        updateTheme();
 
         screen.setFireListener(this);
         // net.rim.device.api.system.Application.getApplication().addKeyListener(this); /* BlackBerry */
@@ -265,6 +257,7 @@ public class FireMIDlet
         aboutPanel.touchScreen = config.showButtons;
         aboutPanel.centerText = config.centerText;
         aboutPanel.autoPlay = config.autoPlay;
+        aboutPanel.darkMode = config.darkMode;
         int i = 0;
         while (i < 6) {
             aboutPanel.keys[i] = config.gradeKey[i];
@@ -320,6 +313,29 @@ public class FireMIDlet
         } else {
             showDone();
         }
+    }
+
+    public void updateTheme()
+    {
+        try {
+            if (blackberry) {
+                FireScreen.setTheme(new FireTheme("file://res/blackberry.properties"));
+
+            } else if (config.isBigScreen) {
+                if (config.darkMode) {
+                    FireScreen.setTheme(new FireTheme("file://darkhires.properties"));
+                } else {
+                    FireScreen.setTheme(new FireTheme("file://hires.properties"));
+                }
+
+            } else {
+                if (config.darkMode) {
+                    FireScreen.setTheme(new FireTheme("file://darknormal.properties"));
+                } else {
+                    FireScreen.setTheme(new FireTheme("file://normal.properties"));
+                }
+            }
+        } catch (Exception e) {}
     }
 
     public void updateFont(int fontsize)
@@ -442,6 +458,7 @@ public class FireMIDlet
                 config.showButtons = aboutPanel.touchScreen;
                 config.centerText = aboutPanel.centerText;
                 config.autoPlay = aboutPanel.autoPlay;
+                config.darkMode = aboutPanel.darkMode;
                 int i = 0;
                 while (i < 6) {
                     config.gradeKey[i] = aboutPanel.keys[i];
@@ -455,6 +472,8 @@ public class FireMIDlet
                 config.rightSoftKey = FireScreen.rightSoftKey;
 
                 config.save((Progress)progressGauge);
+
+                updateTheme();
             }
         }
 

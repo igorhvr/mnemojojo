@@ -52,6 +52,7 @@ public class AboutPanel
     protected InputComponent touchscreenCheck;
     protected InputComponent centerTextCheck;
     protected InputComponent autoPlayCheck;
+    protected InputComponent darkModeCheck;
     protected InputComponent cardstoloadNum;
     protected boolean cardstoloadSet = false;
 
@@ -72,6 +73,7 @@ public class AboutPanel
     protected final static String cardsToLoadText= "Cards to load ahead:";
     protected final static String centerTextText= "Center card text";
     protected final static String autoPlayText= "Play sounds automatically";
+    protected final static String darkModeText= "Dark mode";
     protected final static String nocardpathText
                                 = "(no card directory currently set)";
 
@@ -80,6 +82,7 @@ public class AboutPanel
     public boolean touchScreen = true;
     public boolean centerText = false;
     public boolean autoPlay = true;
+    public boolean darkMode = false;
     public int keys[];
     public String cardpath;
     public int cardsToLoad;
@@ -158,6 +161,7 @@ public class AboutPanel
         aboutCnt.add(fontsizeRow());
         centerTextCheck = checkboxRow(centerTextText, aboutCnt);
         autoPlayCheck = checkboxRow(autoPlayText, aboutCnt);
+        darkModeCheck = checkboxRow(darkModeText, aboutCnt);
 
         cardstoloadNum = numberRow(cardsToLoadText, aboutCnt);
 
@@ -199,6 +203,8 @@ public class AboutPanel
         centerTextCheck.repaint();
         autoPlayCheck.setChecked(autoPlay);
         autoPlayCheck.repaint();
+        darkModeCheck.setChecked(darkMode);
+        darkModeCheck.repaint();
 
         if (!cardstoloadSet) {
             cardstoloadNum.setValue(Integer.toString(cardsToLoad));
@@ -246,6 +252,10 @@ public class AboutPanel
 
             } else if (autoPlayText.equals(val)) {
                 autoPlay = !input.isChecked();
+                dirty = true;
+
+            } else if (darkModeText.equals(val)) {
+                darkMode = !input.isChecked();
                 dirty = true;
 
             } else if (cardstoloadNum.equals(input)) {

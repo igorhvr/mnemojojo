@@ -166,7 +166,16 @@ public class CardPanel
     StringBuffer makeCardHtml(boolean includeAnswer)
     {
         StringBuffer html = new StringBuffer(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<body>");
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<body");
+
+        int bg = FireScreen.getTheme().getIntProperty("xhtml.bg.color");
+        if (bg == 0x00000000) {
+            html.append(" bgcolor=\"black\"");
+        } else if (bg == 0x00FFFFFF) {
+            html.append(" bgcolor=\"white\"");
+        }
+
+        html.append(">");
 
         String question = card.getQuestion();
         String answer = card.getAnswer();
