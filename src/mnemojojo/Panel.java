@@ -54,6 +54,10 @@ class Panel
 
             if (gameCode == Canvas.UP || gameCode == Canvas.DOWN) {
                 scrollPanel.scroll(gameCode, normalVScrollLength);
+
+            } else if (gameCode == Canvas.LEFT || gameCode == Canvas.RIGHT) {
+                scrollPanel.scroll(gameCode, normalHScrollLength);
+
             } else {
                 super.keyReleased(keyCode);
             }

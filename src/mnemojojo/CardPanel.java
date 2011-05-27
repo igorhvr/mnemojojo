@@ -71,7 +71,9 @@ public class CardPanel
                      Command cmdLeft, Command cmdRight, Command cmdButton)
     {
         super((Container)null,
-              (config.showButtons?Panel.NO_SCROLLBAR:Panel.VERTICAL_SCROLLBAR),
+              (config.showButtons ?
+                    Panel.NO_SCROLLBAR
+                 :  Panel.VERTICAL_SCROLLBAR + Panel.HORIZONTAL_SCROLLBAR),
               true,
               config);
 
@@ -105,8 +107,9 @@ public class CardPanel
             htmlSubPanel = null;
             setDragScroll(true);
         } else {
-            htmlSubPanel = new Panel(null, Panel.VERTICAL_SCROLLBAR,
-                                     false, config);
+            htmlSubPanel = new Panel(null,
+              Panel.VERTICAL_SCROLLBAR + Panel.HORIZONTAL_SCROLLBAR,
+              false, config);
             htmlSubPanel.setCommandListener(cmdListen);
             htmlSubPanel.setDragScroll(true);
             htmlSubPanel.setKeyListener(keyListen);
