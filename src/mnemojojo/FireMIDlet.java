@@ -78,6 +78,7 @@ public class FireMIDlet
     Command cmdReshow;
     Command cmdButton;
 
+    // Set to true to show a debugging panel on exit (And write a file)
     private final boolean debug = false;
     private Console console;
 
