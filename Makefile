@@ -35,6 +35,7 @@ zip: bin/mnemojojo.jar bin/mnemojojo.jad version debug
 	  --junk-paths --quiet \
 	  bin/mnemojojo.jar \
 	  bin/mnemojojo.jad
+	@echo created: bin/mnemojojo-`cat version``cat debug`.zip
 
 emulator: bin/mnemojojo.jar bin/mnemojojo.jad filesystem
 	$(WTK)/bin/emulator \
